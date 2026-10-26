@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hemesh Kanth — Creative Technologist</title>
+<meta name="description" content="Hemesh Kanth — creative technologist exploring the weird space between design, code, and the physical world.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050505;
+    --fg: #f2f2ee;
+    --dim: #8a8a85;
+    --faint: #262624;
+    --line: #3a3a37;
+    /* accents — used sparingly */
+    --sindoor: #ff4a2e;
+    --haldi: #ffb81c;
+    --neel: #5b6bff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    /* pulli — kolam dot grid */
+    background-image: radial-gradient(var(--faint) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    background-position: 11px 11px;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px);
+    z-index: 10;
+  }
+  ::selection { background: var(--haldi); color: var(--bg); }
+
+  .deva { font-family: "Tiro Devanagari Hindi", serif; }
+
+  .frame {
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .window {
+    border: 1px solid var(--line);
+    background: rgba(5,5,5,0.9);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  /* temple-gate corner brackets */
+  .window::before, .window::after {
+    content: ""; position: absolute; width: 18px; height: 18px; pointer-events: none;
+  }
+  .window::before { top: -5px; left: -5px; border-top: 2px solid var(--sindoor); border-left: 2px solid var(--sindoor); }
+  .window::after { bottom: -5px; right: -5px; border-bottom: 2px solid var(--sindoor); border-right: 2px solid var(--sindoor); }
+
+  .titlebar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 14px;
+    color: var(--dim);
+    font-size: 12px;
+  }
+  .titlebar .dots { display: flex; gap: 6px; }
+  .titlebar .dots span { width: 9px; height: 9px; border: 1px solid var(--dim); display: block; transform: rotate(45deg); }
+  .titlebar .dots span:nth-child(1) { background: var(--sindoor); border-color: var(--sindoor); }
+  .titlebar .dots span:nth-child(2) { background: var(--haldi); border-color: var(--haldi); }
+  .titlebar .dots span:nth-child(3) { background: var(--neel); border-color: var(--neel); }
+  .titlebar .path { flex: 1; text-align: center; letter-spacing: 0.05em; }
+
+  /* ajrakh / block-print border band */
+  .band {
+    height: 18px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='18'%3E%3Cpath d='M18 2 L26 9 L18 16 L10 9 Z' fill='none' stroke='%23f2f2ee' stroke-width='1'/%3E%3Ccircle cx='18' cy='9' r='1.8' fill='%23ff4a2e'/%3E%3Cpath d='M0 9 L3 6 L6 9 L3 12 Z M30 9 L33 6 L36 9 L33 12 Z' fill='%235b6bff'/%3E%3C/svg%3E");
+    background-size: 36px 18px;
+    animation: slide 40s linear infinite;
+    opacity: 0.85;
+  }
+  .band.rev { animation-direction: reverse; }
+  @keyframes slide { to { background-position: 360px 0; } }
+
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+  }
+  .left { padding: 28px 28px 32px; display: flex; flex-direction: column; gap: 26px; border-right: 1px solid var(--line); }
+  .right { position: relative; display: flex; flex-direction: column; min-height: 440px; overflow: hidden; }
+
+  #log { color: var(--dim); font-size: 13px; white-space: pre-wrap; min-height: 12em; }
+  #log .ok { color: var(--haldi); }
+  #log .deva { color: var(--fg); font-size: 15px; }
+  .cursor { display: inline-block; width: 0.6em; height: 1.1em; background: var(--sindoor); vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .reveal { opacity: 0; transform: translateY(6px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.on { opacity: 1; transform: none; }
+
+  .nameblock { display: flex; align-items: center; gap: 20px; }
+  #kolam { width: 108px; height: 108px; flex-shrink: 0; }
+  #kolam .loop { fill: none; stroke: var(--sindoor); stroke-width: 1.6; stroke-linecap: round; }
+  #kolam .loop2 { fill: none; stroke: var(--fg); stroke-width: 0.8; opacity: 0.55; }
+  #kolam .dot { fill: var(--haldi); }
+
+  h1 {
+    font-weight: 800;
+    font-size: clamp(40px, 7vw, 84px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+  h1 .outline { color: transparent; -webkit-text-stroke: 1px var(--fg); }
+  .role { margin-top: 12px; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
+  .role b { color: var(--fg); font-weight: 400; }
+  .role .x { color: var(--sindoor); }
+  .role .deva { text-transform: none; letter-spacing: 0; color: var(--haldi); font-size: 15px; }
+
+  .intro { font-size: 16px; max-width: 34em; font-weight: 300; }
+  .intro em { font-style: normal; color: var(--bg); background: var(--haldi); padding: 0 4px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tags span { border: 1px solid var(--line); padding: 2px 10px; font-size: 12px; color: var(--dim); transition: all .15s; }
+  .tags span::before { content: "◆ "; color: var(--neel); }
+  .tags span:nth-child(3n+2)::before { color: var(--sindoor); }
+  .tags span:nth-child(3n)::before { color: var(--haldi); }
+  .tags span:hover { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+
+  .contact { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  .contact .k { color: var(--dim); }
+  .contact .arrow { color: var(--sindoor); }
+  .contact a {
+    color: var(--fg); text-decoration: none;
+    border-bottom: 1px solid var(--sindoor);
+    padding: 0 2px;
+  }
+  .contact a:hover { background: var(--sindoor); color: var(--bg); }
+
+  .status {
+    margin-top: auto;
+    border: 1px dashed var(--line);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--dim);
+  }
+  .bar { display: inline-block; letter-spacing: 1px; color: var(--neel); }
+
+  #specimen {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: crosshair;
+    touch-action: none;
+    position: relative; z-index: 1;
+  }
+  #ascii {
+    font-size: 10px;
+    line-height: 10px;
+    white-space: pre;
+    color: var(--fg);
+    user-select: none;
+  }
+  #ascii .h { color: var(--haldi); }
+  #ascii .s { color: var(--sindoor); }
+  #ascii .n { color: var(--neel); }
+
+  /* big faint mandala behind specimen */
+  #mandala {
+    position: absolute; left: 50%; top: 50%;
+    width: 520px; height: 520px; margin: -260px 0 0 -260px;
+    opacity: 0.18; pointer-events: none;
+    animation: spin 120s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .label {
+    position: absolute; font-size: 11px; color: var(--dim); letter-spacing: 0.08em;
+    pointer-events: none; z-index: 2;
+  }
+  .label b { color: var(--sindoor); font-weight: 400; }
+  .label.tl { top: 14px; left: 16px; }
+  .label.tr { top: 14px; right: 16px; text-align: right; }
+  .label.bl { bottom: 14px; left: 16px; }
+  .label.br { bottom: 14px; right: 16px; text-align: right; }
+
+  footer {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    font-size: 11px; color: var(--dim); letter-spacing: 0.06em;
+  }
+  footer .deva { color: var(--haldi); font-size: 13px; letter-spacing: 0; }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    .left { border-right: none; border-bottom: 1px solid var(--line); padding: 22px 18px; }
+    .right { min-height: 380px; }
+    #ascii { font-size: 8px; line-height: 8px; }
+    #kolam { width: 76px; height: 76px; }
+    .nameblock { gap: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cursor, .band, #mandala { animation: none; }
+    .reveal { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="path">hemesh@nid: ~/portfolio — zsh</div>
+      <div id="clock">--:--:--</div>
+    </div>
+    <div class="band"></div>
+
+    <div class="grid">
+      <section class="left">
+        <div id="log"></div>
+
+        <div class="reveal" data-step="1">
+          <div class="nameblock">
+            <svg id="kolam" viewBox="-60 -60 120 120" aria-hidden="true"></svg>
+            <h1>Hemesh<br><span class="outline">Kanth</span></h1>
+          </div>
+          <p class="role"><b>Creative Technologist</b> // design <span class="x">×</span> code <span class="x">×</span> <span class="deva">मिट्टी</span></p>
+        </div>
+
+        <p class="intro reveal" data-step="2">
+          Creative technologist exploring the <em>weird space</em> between design, code, and the physical world.
+          Building robots, interactive things, and happy accidents. 🛠️
+        </p>
+
+        <div class="tags reveal" data-step="3">
+          <span>creative robotics</span>
+          <span>physical computing</span>
+          <span>movement as interface</span>
+          <span>computer vision</span>
+          <span>machine learning</span>
+          <span>kinetic things</span>
+        </div>
+
+        <div class="contact reveal" data-step="4">
+          <div><span class="k">$ contact --email</span></div>
+          <div><span class="arrow">→</span> <a href="mailto:hemesh_k@nid.edu">hemesh_k@nid.edu</a></div>
+        </div>
+
+        <div class="status reveal" data-step="5">
+          portfolio.build &nbsp;<span class="bar" id="bar">[░░░░░░░░░░░░░░░░]</span> <span id="pct">0%</span><br>
+          full site compiling — check back soon <span class="cursor"></span>
+        </div>
+      </section>
+
+      <section class="right">
+        <svg id="mandala" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+        <span class="label tl">SPECIMEN_<b>001</b><br>part machine / part seed</span>
+        <span class="label tr" id="readout">rx 0.00<br>ry 0.00</span>
+        <span class="label bl">drag / move to rotate</span>
+        <span class="label br">render: ascii<br>3d → 2d</span>
+        <div id="specimen"><pre id="ascii" aria-hidden="true"></pre></div>
+      </section>
+    </div>
+
+    <div class="band rev"></div>
+  </div>
+
+  <footer>
+    <span>© 2026 Hemesh Kanth</span>
+    <span>machine <span class="deva">+ मिट्टी</span> · NID New Media Design</span>
+    <span>v0.0.2 — placeholder</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    parent && parent.appendChild(n);
+    return n;
+  };
+  const curve = (fn, steps = 720) => {
+    let d = "";
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * Math.PI * 2;
+      const [x, y] = fn(t);
+      d += (i ? "L" : "M") + x.toFixed(2) + " " + y.toFixed(2);
+    }
+    return d + "Z";
+  };
+
+  /* ---------- clock ---------- */
+  const clock = document.getElementById("clock");
+  const tick = () => clock.textContent = new Date().toLocaleTimeString("en-GB");
+  tick(); setInterval(tick, 1000);
+
+  /* ---------- kolam emblem: pulli dots + one continuous looping line ---------- */
+  const kolam = document.getElementById("kolam");
+  // diamond dot grid 1-3-5-3-1
+  [[0],[ -1,0,1],[-2,-1,0,1,2],[-1,0,1],[0]].forEach((row, r) =>
+    row.forEach(c => el("circle", { class: "dot", cx: c * 16, cy: (r - 2) * 16, r: 1.9 }, kolam)));
+  const loop = el("path", { class: "loop", d: curve(t => {
+    const r = 38 + 12 * Math.cos(4 * t);              // weaves around the dots
+    return [r * Math.cos(t + Math.PI / 4) * Math.cos(t * 0), r * Math.sin(t + Math.PI / 4)];
+  }) }, kolam);
+  const loop2 = el("path", { class: "loop2", d: curve(t => {
+    const r = 30 * Math.cos(4 * t);                   // 8-petal inner rose
+    return [r * Math.cos(t), r * Math.sin(t)];
+  }) }, kolam);
+  [loop, loop2].forEach((p, i) => {
+    const L = p.getTotalLength();
+    p.style.strokeDasharray = L;
+    p.style.strokeDashoffset = reduce ? 0 : L;
+    if (!reduce) {
+      p.style.transition = `stroke-dashoffset ${2.6 + i}s ease-in-out ${0.4 + i * 0.6}s`;
+      kolam.dataset.len = L;
+    }
+  });
+  const drawKolam = () => [loop, loop2].forEach(p => p.style.strokeDashoffset = 0);
+
+  /* ---------- mandala / rangoli rings behind the specimen ---------- */
+  const mandala = document.getElementById("mandala");
+  const ringColors = ["#5b6bff", "#f2f2ee", "#ff4a2e", "#f2f2ee", "#ffb81c"];
+  [ [90, 24, 4], [74, 16, 6], [58, 12, 5], [42, 8, 4], [26, 6, 3] ].forEach(([R, k, a], i) => {
+    el("path", {
+      d: curve(t => { const r = R + a * Math.cos(k * t); return [r * Math.cos(t), r * Math.sin(t)]; }, 900),
+      fill: "none", stroke: ringColors[i], "stroke-width": 0.6
+    }, mandala);
+  });
+  for (let i = 0; i < 48; i++) {
+    const t = (i / 48) * Math.PI * 2;
+    el("circle", { cx: 98 * Math.cos(t), cy: 98 * Math.sin(t), r: i % 4 ? 0.7 : 1.5, fill: i % 4 ? "#f2f2ee" : "#ff4a2e" }, mandala);
+  }
+
+  /* ---------- boot log ---------- */
+  const lines = [
+    ["> boot hemesh.sys", ""],
+    ["> loading design ............ ", "ok"],
+    ["> loading code .............. ", "ok"],
+    ["> loading mitti.physical .... ", "ok"],
+    ["> weaving kolam.grid ........ ", "ok"],
+    ["> calibrating motors ........ ", "ok"],
+    ["> seeding happy_accidents ... ", "∞"],
+  ];
+  const greet = '> <span class="deva">नमस्ते</span>, human.';
+  const log = document.getElementById("log");
+  const reveals = [...document.querySelectorAll(".reveal")];
+  const showAll = () => {
+    reveals.forEach((el, i) => setTimeout(() => el.classList.add("on"), reduce ? 0 : i * 180));
+    setTimeout(drawKolam, reduce ? 0 : 100);
+  };
+
+  if (reduce) {
+    log.innerHTML = lines.map(([a, b]) => a + (b ? `<span class="ok">${b}</span>` : "")).join("\n") + "\n" + greet;
+    showAll();
+  } else {
+    let li = 0, ci = 0, html = "";
+    const cursor = '<span class="cursor"></span>';
+    const type = () => {
+      if (li >= lines.length) { log.innerHTML = html + greet; showAll(); return; }
+      const [text, ok] = lines[li];
+      if (ci < text.length) {
+        ci++;
+        log.innerHTML = html + text.slice(0, ci) + cursor;
+        setTimeout(type, text[ci - 1] === "." ? 6 : 18);
+      } else {
+        html += text + (ok ? `<span class="ok">${ok}</span>` : "") + "\n";
+        li++; ci = 0;
+        log.innerHTML = html + cursor;
+        setTimeout(type, 130);
+      }
+    };
+    setTimeout(type, 300);
+  }
+
+  /* ---------- progress bar ---------- */
+  const bar = document.getElementById("bar"), pct = document.getElementById("pct");
+  let p = 0;
+  setInterval(() => {
+    p = (p + 1 + Math.random() * 3) % 100;
+    const n = Math.round(p / 100 * 16);
+    bar.textContent = "[" + "█".repeat(n) + "░".repeat(16 - n) + "]";
+    pct.textContent = Math.floor(p) + "%";
+  }, 260);
+
+  /* ---------- ASCII organic specimen ---------- */
+  const pre = document.getElementById("ascii");
+  const box = document.getElementById("specimen");
+  const ramp = " .,:;-=+*ox#%@";
+  let cols = 80, rows = 44;
+
+  const resize = () => {
+    const fs = parseFloat(getComputedStyle(pre).fontSize);
+    cols = Math.max(30, Math.floor(box.clientWidth / (fs * 0.6)) - 2);
+    rows = Math.max(20, Math.floor(box.clientHeight / fs) - 2);
+  };
+  window.addEventListener("resize", resize);
+  resize();
+
+  const radius = (th, ph, t) =>
+    1
+    + 0.22 * Math.sin(3 * th + t * 0.8) * Math.sin(4 * ph + t * 0.6)
+    + 0.08 * Math.sin(9 * ph - t * 1.3) * Math.sin(th)
+    + 0.10 * Math.cos(2 * th - t * 0.5);
+
+  const point = (th, ph, t) => {
+    const r = radius(th, ph, t);
+    return [r * Math.sin(th) * Math.cos(ph), r * Math.cos(th), r * Math.sin(th) * Math.sin(ph)];
+  };
+
+  let rx = 0.4, ry = 0, tx = 0.4, ty = 0, auto = true, lastMove = 0;
+  const readout = document.getElementById("readout");
+
+  box.addEventListener("pointermove", e => {
+    const b = box.getBoundingClientRect();
+    ty = ((e.clientX - b.left) / b.width - 0.5) * Math.PI * 2;
+    tx = ((e.clientY - b.top) / b.height - 0.5) * Math.PI;
+    auto = false; lastMove = performance.now();
+  });
+  box.addEventListener("pointerleave", () => auto = true);
+
+  const light = (() => { const v = [-0.5, 0.7, -0.6]; const m = Math.hypot(...v); return v.map(c => c / m); })();
+  const NT = 70, NP = 140, e = 1e-3;
+  const top = ramp.length - 1;
+  // colour class per brightness: deep shadow → neel, highlights → haldi, rim specks → sindoor
+  const cls = k => k >= top - 1 ? "h" : k <= 2 ? "n" : "";
+
+  const frame = (ms) => {
+    const t = reduce ? 0 : ms / 1000;
+    if (auto || performance.now() - lastMove > 2500) { ty += reduce ? 0 : 0.006; tx = 0.4 + 0.25 * Math.sin(t * 0.3); }
+    rx += (tx - rx) * 0.08; ry += (ty - ry) * 0.08;
+
+    const cA = Math.cos(rx), sA = Math.sin(rx), cB = Math.cos(ry), sB = Math.sin(ry);
+    const rot = ([x, y, z]) => {
+      const x1 = x * cB + z * sB, z1 = -x * sB + z * cB;
+      return [x1, y * cA - z1 * sA, y * sA + z1 * cA];
+    };
+
+    const size = cols * rows;
+    const chars = new Array(size).fill(" ");
+    const kind = new Array(size).fill("");
+    const zb = new Float32Array(size);
+    const K = 4.2, scale = Math.min(cols * 0.5, rows * 0.95) * 0.82 * K;
+
+    for (let i = 1; i < NT; i++) {
+      const th = (i / NT) * Math.PI;
+      for (let j = 0; j < NP; j++) {
+        const ph = (j / NP) * Math.PI * 2;
+        const p = point(th, ph, t);
+        const pt = point(th + e, ph, t), pp = point(th, ph + e, t);
+        const du = [pt[0] - p[0], pt[1] - p[1], pt[2] - p[2]];
+        const dv = [pp[0] - p[0], pp[1] - p[1], pp[2] - p[2]];
+        let n = [du[1] * dv[2] - du[2] * dv[1], du[2] * dv[0] - du[0] * dv[2], du[0] * dv[1] - du[1] * dv[0]];
+        const nm = Math.hypot(...n) || 1; n = n.map(c => -c / nm);
+
+        const [x, y, z] = rot(p);
+        const [nx, ny, nz] = rot(n);
+        const ooz = 1 / (z + K);
+        const sx = Math.floor(cols / 2 + scale * ooz * x);
+        const sy = Math.floor(rows / 2 - scale * ooz * y * 0.5);
+        if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) continue;
+        const idx = sx + sy * cols;
+        if (ooz > zb[idx]) {
+          zb[idx] = ooz;
+          const L = nx * light[0] + ny * light[1] + nz * light[2];
+          const k = Math.max(1, Math.min(top, Math.floor((L * 0.5 + 0.5) * ramp.length)));
+          chars[idx] = ramp[k];
+          // ribs: sparse sindoor specks where the machine ridges peak
+          const rib = Math.sin(9 * ph - t * 1.3) > 0.97 && k > 4;
+          kind[idx] = rib ? "s" : cls(k);
+        }
+      }
+    }
+
+    // group runs of the same colour into spans
+    let html = "";
+    for (let r = 0; r < rows; r++) {
+      let run = "", cur = null;
+      for (let c = 0; c < cols; c++) {
+        const i = c + r * cols, kd = kind[i];
+        if (kd !== cur) {
+          if (run) html += cur ? `<span class="${cur}">${run}</span>` : run;
+          run = ""; cur = kd;
+        }
+        run += chars[i];
+      }
+      if (run) html += cur ? `<span class="${cur}">${run}</span>` : run;
+      html += "\n";
+    }
+    pre.innerHTML = html;
+    readout.innerHTML = `rx ${rx.toFixed(2)}<br>ry ${(ry % (Math.PI * 2)).toFixed(2)}`;
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
