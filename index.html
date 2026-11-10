@@ -1,21 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hemesh Kanth</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Hemesh Kanth, creative technologist. A goldfish's journey from a bowl to the edge of the world.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='18' cy='16' rx='10' ry='8' fill='%23F7C443' stroke='%2334374A' stroke-width='2'/%3E%3Cpath d='M8 16 L2 10 L3 22 Z' fill='%23F7C443' stroke='%2334374A' stroke-width='2'/%3E%3Ccircle cx='23' cy='14' r='2.4' fill='none' stroke='%2334374A' stroke-width='1.6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* A web film. The 3D scene fills the screen; the story is told by captions and a few quiet cards.
+   Palette: pastel. Paper, soft ink, sky blue, mint and pink; the goldfish is the only mango. */
+:root {
+  --paper: #fdf6ea;
+  --ink: #34374a;
+  --mute: rgba(52,55,74,.62);
+  --line: rgba(52,55,74,.18);
+  --blue: #5b8fd9;
+  --blue-soft: #dde9f8;
+  --mint: #cdebd2;
+  --pink: #f7d2d8;
+  --mango: #f7c443;
+  --pixel: "Silkscreen", "Courier New", monospace;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --ease: cubic-bezier(.2,.7,.2,1);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--mono); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+#scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.px { font-family: var(--pixel); letter-spacing: .02em; }
 
+/* ---------- header ---------- */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding-top: env(safe-area-inset-top, 0px); padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); pointer-events: none; }
+header .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+header .bar > * { pointer-events: auto; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--pixel); font-size: 15px; text-decoration: none; }
+.logo svg { width: 30px; height: 20px; overflow: visible; }
+.logo .tail { transform-origin: 9px 10px; animation: wag .5s ease-in-out infinite alternate; }
+@keyframes wag { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+nav.main { display: flex; gap: 6px; align-items: center; background: rgba(253,246,234,.82); border: 1px solid var(--line); border-radius: 999px; padding: 4px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); position: relative; }
+nav.main a { font-family: var(--pixel); font-size: 12px; text-decoration: none; padding: 6px 12px 7px; border-radius: 999px; position: relative; transition: background .25s, color .25s; }
+nav.main a:hover { background: var(--blue-soft); }
+nav.main a.on { background: var(--ink); color: var(--paper); }
+.tools { display: flex; gap: 6px; align-items: center; }
+.ibtn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: rgba(253,246,234,.82); display: grid; place-items: center; transition: transform .2s, background .2s; }
+.ibtn:hover { background: var(--blue-soft); }
+.ibtn:active { transform: scale(.9); }
+.ibtn svg { width: 18px; height: 18px; }
+.ibtn .slash { display: none; }
+.ibtn.muted .slash { display: inline; }
+.ibtn.muted .wave { display: none; }
+.ibtn g[class^="i-"] { display: none; }
+#bTime[data-t="day"] .i-day, #bTime[data-t="sunset"] .i-sunset, #bTime[data-t="night"] .i-night, #bTime[data-t="sunrise"] .i-sunrise { display: inline; }
 
-Hemesh Kanth
-work
-exploration
-about
-contact
+/* bubbles */
+.bub { position: fixed; z-index: 31; width: var(--s); height: var(--s); border-radius: 50%; border: 1.5px solid var(--blue); background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.9) 0 18%, rgba(219,230,248,.35) 19%); pointer-events: none; animation: rise var(--d) var(--ease) forwards; }
+@keyframes rise { 0% { transform: translate(0, 0) scale(.3); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; } }
 
+/* ---------- captions (subtitles) ---------- */
+#caption { position: fixed; left: 50%; bottom: calc(46px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20; max-width: min(760px, 88vw); text-align: center; pointer-events: none; }
+#caption span { display: inline; font-family: var(--mono); font-size: clamp(14px, 1.5vw, 18px); line-height: 1.7; background: var(--ink); color: var(--paper); padding: 3px 8px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+#caption .cur { display: inline-block; width: .55em; height: 1em; background: var(--mango); vertical-align: -2px; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
 
+/* progress */
+#prog { position: fixed; left: 0; bottom: 0; height: 3px; width: 0; background: var(--blue); z-index: 25; }
+.hint { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20; font-family: var(--pixel); font-size: 11px; color: var(--mute); transition: opacity .5s; pointer-events: none; }
 
+/* ---------- cards ---------- */
+.card { position: fixed; z-index: 22; left: max(24px, env(safe-area-inset-left, 0px)); top: 50%; width: min(440px, calc(100vw - 48px)); transform: translate(-24px, -50%); opacity: 0; pointer-events: none; transition: opacity .5s var(--ease), transform .6s var(--ease); background: rgba(253,246,234,.94); border: 1px solid var(--ink); padding: 22px 24px 24px; box-shadow: 6px 6px 0 var(--ink); }
+.card.on { opacity: 1; transform: translate(0, -50%); pointer-events: auto; }
+.card.right { left: auto; right: max(24px, env(safe-area-inset-right, 0px)); transform: translate(24px, -50%); }
+.card.right.on { transform: translate(0, -50%); }
+.card .k { font-family: var(--pixel); font-size: 11px; color: var(--blue); display: flex; justify-content: space-between; gap: 10px; }
+.card h2 { font-family: var(--pixel); font-weight: 400; font-size: clamp(26px, 3vw, 38px); line-height: 1; margin: 12px 0 12px; letter-spacing: 0; }
+.card p { margin: 0 0 10px; }
+.card .meta { color: var(--mute); font-size: 12px; }
+.card .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.btn { font-family: var(--pixel); font-size: 12px; border: 1px solid var(--ink); padding: 8px 14px 9px; background: var(--paper); transition: background .15s, color .15s, transform .1s; text-decoration: none; display: inline-flex; gap: 8px; align-items: center; }
+.btn:hover { background: var(--ink); color: var(--paper); }
+.btn:active { transform: translate(2px, 2px); }
+.btn.primary { background: var(--mango); }
+.btn.primary:hover { background: var(--ink); color: var(--mango); }
 
-scroll ↓
+/* opening: who I am (no box) */
+#title { position: fixed; z-index: 22; left: max(36px, env(safe-area-inset-left, 0px)); top: 50%; transform: translate(-16px, -50%); width: min(560px, calc(100vw - 48px)); opacity: 0; pointer-events: none; transition: opacity .6s var(--ease), transform .7s var(--ease); }
+#title.on { opacity: 1; transform: translate(0, -50%); }
+#title h1 { font-family: var(--pixel); font-weight: 700; font-size: clamp(42px, 7.2vw, 92px); line-height: .9; margin: 0 0 18px; letter-spacing: -.01em; color: var(--ink); text-shadow: 3px 3px 0 var(--paper), -1px -1px 0 var(--paper); }
+#title .lead { font-family: var(--mono); font-size: clamp(16px, 1.7vw, 21px); line-height: 1.45; margin: 0 0 10px; display: inline; background: var(--paper); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 2px 8px; }
+#title .sub { font-family: var(--pixel); font-size: 11px; color: var(--mute); margin: 16px 0 0; background: rgba(253,246,234,.85); display: inline-block; padding: 3px 8px; }
 
+/* lists inside cards */
+.mini { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--line); max-height: 46vh; overflow: auto; }
+.mini li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.mini b { font-family: var(--pixel); font-weight: 400; font-size: 13px; display: block; }
+.mini span { color: var(--mute); font-size: 12px; display: block; }
+.mini .t { font-size: 10px; color: var(--blue); font-family: var(--pixel); }
+.mail { font-family: var(--pixel); font-size: clamp(20px, 2.4vw, 28px); word-break: break-all; user-select: all; margin: 6px 0 4px; }
 
+/* ---------- case study panel ---------- */
+#panel { position: fixed; inset: 0 0 0 auto; width: min(820px, 100vw); z-index: 40; background: var(--paper); border-left: 1px solid var(--ink); transform: translateX(105%); transition: transform .7s var(--ease); display: flex; flex-direction: column; }
+#panel.open { transform: none; }
+#panel .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px max(18px, env(safe-area-inset-right, 0px)) 14px 26px; border-bottom: 1px solid var(--line); padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+#panel .scroll { overflow-y: auto; flex: 1; padding: 34px 40px 120px 40px; }
+#panel h1 { font-family: var(--pixel); font-weight: 700; font-size: clamp(34px, 5vw, 60px); line-height: .95; margin: 10px 0 16px; }
+#panel .line { font-size: 17px; max-width: 34em; }
+#panel .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 22px; margin: 26px 0 0; font-size: 13px; }
+#panel .facts dt { color: var(--mute); }
+#panel .facts dd { margin: 0; }
+#panel section { margin-top: 46px; }
+#panel h3 { font-family: var(--pixel); font-weight: 400; font-size: 15px; color: var(--blue); margin: 0 0 10px; }
+#panel p { max-width: 40em; margin: 0 0 10px; }
+#panel .deep { color: var(--mute); border-left: 2px solid var(--blue); padding-left: 12px; }
+#panel .pull { font-family: var(--pixel); font-size: clamp(22px, 3vw, 34px); line-height: 1.12; max-width: 20em; }
+#panel .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 0 24px; border-top: 1px solid var(--line); }
+#panel .items div { padding: 12px 0 14px; border-bottom: 1px solid var(--line); }
+#panel .items b { display: block; font-weight: 500; }
+#panel .items span { color: var(--mute); font-size: 13px; }
+#panel figure { margin: 0; }
+#panel .img { aspect-ratio: 16 / 10; max-width: 100%; border: 1px solid var(--ink); background: repeating-linear-gradient(-45deg, transparent 0 9px, var(--line) 9px 10px); display: grid; place-items: center; font-family: var(--pixel); font-size: 11px; color: var(--mute); overflow: hidden; }
+#panel .img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#panel figcaption { font-size: 11px; color: var(--mute); margin-top: 6px; }
+#panel .gal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+#panel .gal .img { aspect-ratio: 4 / 5; }
+#panel .media { margin-top: 36px; }
+#panel .next { margin-top: 70px; border-top: 1px solid var(--ink); padding-top: 18px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
+/* in-page viewers: deck, report, game */
+#panel .media h3 { display: flex; justify-content: space-between; }
+.viewer .stage { position: relative; border: 1px solid var(--ink); background: #fff; aspect-ratio: 16 / 9; overflow: hidden; cursor: pointer; box-shadow: 5px 5px 0 var(--mint); }
+.viewer .stage img { width: 100%; height: 100%; object-fit: contain; display: block; background: #fff; }
+.viewer .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--ink); background: rgba(253,246,234,.92); font-family: var(--pixel); font-size: 20px; line-height: 1; display: grid; place-items: center; opacity: .85; transition: opacity .2s, background .2s; }
+.viewer .nav:hover { opacity: 1; background: var(--mango); }
+.viewer .prev { left: 10px; } .viewer .nextp { right: 10px; }
+.vbar { display: flex; gap: 8px; align-items: center; margin: 12px 0 0; flex-wrap: wrap; }
+.vbar .vsp { flex: 1; }
+.vbar .count { font-size: 12px; color: var(--blue); }
+.thumbs { display: flex; gap: 8px; overflow-x: auto; padding: 12px 2px 8px; scrollbar-width: thin; }
+.thumbs button { flex: 0 0 auto; width: 104px; aspect-ratio: 16 / 9; border: 1px solid var(--line); background: #fff; opacity: .7; transition: opacity .2s, transform .2s, border-color .2s; overflow: hidden; }
+.thumbs button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumbs button:hover { opacity: 1; transform: translateY(-2px); }
+.thumbs button.on { opacity: 1; border: 2px solid var(--blue); }
+.viewer.max, .game.max { position: fixed; inset: 0; z-index: 80; background: rgba(253,246,234,.98); padding: 56px max(16px, 3vw) 16px; display: flex; flex-direction: column; justify-content: center; }
+.viewer.max .stage { flex: 1 1 auto; aspect-ratio: auto; max-height: calc(100vh - 190px); box-shadow: none; }
+.viewer.max .thumbs { flex: 0 0 auto; }
+.closeMax { position: absolute; top: 12px; right: 16px; z-index: 2; }
+.game { position: relative; border: 1px solid var(--ink); aspect-ratio: 16 / 10; background: #fff; overflow: hidden; box-shadow: 5px 5px 0 var(--mint); }
+.game iframe { width: 100%; height: 100%; border: 0; display: block; }
+.game.max { padding: 0; aspect-ratio: auto; }
+.game.max iframe { height: 100%; }
+.gcover { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; background: repeating-linear-gradient(-45deg, transparent 0 9px, var(--line) 9px 10px), var(--paper); }
+.gcover span { font-size: 12px; color: var(--mute); }
+.gcover .btn { font-size: 14px; padding: 12px 20px; }
 
+#veil { position: fixed; inset: 0; z-index: 35; background: rgba(52,55,74,.22); opacity: 0; pointer-events: none; transition: opacity .5s; }
+#veil.on { opacity: 1; pointer-events: auto; }
 
-back to the film ×
+/* loader */
+#loader { position: fixed; inset: 0; z-index: 60; background: var(--paper); display: grid; place-items: center; transition: opacity .7s; }
+#loader.gone { opacity: 0; pointer-events: none; }
+#loader .l { font-family: var(--pixel); font-size: 14px; text-align: center; }
+#loader .l i { display: inline-block; width: 10px; height: 10px; margin: 0 3px; border: 1.5px solid var(--blue); border-radius: 50%; animation: pop 1s ease-in-out infinite; }
+#loader .l i:nth-child(2) { animation-delay: .15s; } #loader .l i:nth-child(3) { animation-delay: .3s; }
+@keyframes pop { 50% { transform: translateY(-8px); } }
 
-loading the ocean
+@media (max-width: 760px) {
+  nav.main a { padding: 6px 8px 7px; font-size: 10px; }
+  .logo span { display: none; }
+  .card, .card.right { left: 12px; right: 12px; width: auto; top: auto; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateY(20px); }
+  .card.on, .card.right.on { transform: none; }
+  #caption { bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+  #panel .scroll { padding: 24px 18px 100px; }
+  #panel .gal { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .bub, .logo .tail, #caption .cur { animation: none !important; } }
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="An animated film: a goldfish leaves its bowl, rides through the city, dives into the ocean and flies off the Earth."></canvas>
 
+<header>
+  <div class="bar">
+    <a class="logo" href="#" data-go="title" aria-label="Back to the start">
+      <svg viewBox="0 0 34 22" aria-hidden="true"><g class="tail"><path d="M10 11 L1 3 Q4 11 1 19 Z" fill="#F7C443" stroke="#34374a" stroke-width="1.4" stroke-linejoin="round"/></g><path d="M9 11 C12 2, 27 1, 33 10 C27 20, 12 20, 9 11 Z" fill="#F7C443" stroke="#34374a" stroke-width="1.4"/><circle cx="25" cy="9" r="3.2" fill="#fff" stroke="#34374a" stroke-width="1.3"/><circle cx="25.6" cy="9" r="1.3" fill="#34374a"/></svg>
+      <span>Hemesh Kanth</span>
+    </a>
+    <nav class="main" id="nav" aria-label="Chapters">
+      <a href="#work" data-go="work">work</a>
+      <a href="#exploration" data-go="exploration">exploration</a>
+      <a href="#about" data-go="about">about</a>
+      <a href="#contact" data-go="contact">contact</a>
+    </nav>
+    <div class="tools">
+      <button class="ibtn" id="bTime" type="button" aria-label="Time of day"><svg viewBox="0 0 24 24" aria-hidden="true"><g class="i-day"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></g><g class="i-sunset"><path d="M5 16a7 7 0 0 1 14 0z" fill="currentColor"/><path d="M2.5 19h19M12 4v4M9.5 6.5L12 9l2.5-2.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></g><g class="i-night"><path d="M15.5 3.5a8.5 8.5 0 1 0 5 13.5A7 7 0 0 1 15.5 3.5z" fill="currentColor"/></g><g class="i-sunrise"><path d="M5 16a7 7 0 0 1 14 0z" fill="currentColor"/><path d="M2.5 19h19M12 9V5M9.5 6.5L12 4l2.5 2.5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></g></svg></button>
+      <button class="ibtn" id="bMusic" type="button" aria-label="Music on" title="music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6l10-2v11.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><ellipse cx="6.6" cy="17.6" rx="2.6" ry="2.1" fill="currentColor"/><ellipse cx="16.6" cy="15.6" rx="2.6" ry="2.1" fill="currentColor"/><path class="slash" d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <button class="ibtn" id="bSound" type="button" aria-label="Sound on"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path class="slash" d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div id="caption" aria-live="polite"></div>
+<div class="hint" id="hint">scroll ↓</div>
+<div id="prog"></div>
+
+<div id="title"></div>
+<div class="card" id="card"></div>
+
+<div id="veil"></div>
+<aside id="panel" aria-hidden="true">
+  <div class="top"><span class="px" id="panelK" style="font-size:12px;color:var(--blue)"></span><button class="btn" id="panelClose" type="button">back to the film ×</button></div>
+  <div class="scroll" id="panelBody"></div>
+</aside>
+
+<div id="loader"><div class="l">loading the ocean<br><br><i></i><i></i><i></i></div></div>
+
+<script src="js/three.min.js"></script>
+<script src="content.js"></script>
+<script>
+/* Normal visit: start the film. Inside the editor (?draft): wait for the draft content, then start. */
+(function () {
+  var started = false, draft = /[?&]draft/.test(location.search) && window.parent !== window, jump = null;
+  function go() { if (started) return; started = true; var s = document.createElement('script'); s.src = 'js/film.js'; s.onload = function () { if (jump != null && window.FILM) setTimeout(function () { FILM.go(jump); setTimeout(function () { FILM.free(); }, 400); }, 300); }; document.body.appendChild(s); }
+  if (!draft) return go();
+  addEventListener('message', function (e) { var d = e.data; if (d && d.type === 'fish-draft' && !started) { window.CONTENT = d.content; jump = d.jump; go(); } });
+  parent.postMessage({ type: 'fish-ready' }, '*');
+  setTimeout(go, 5000);
+})();
+</script>
+</body>
+</html>

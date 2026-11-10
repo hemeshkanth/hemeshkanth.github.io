@@ -1,0 +1,327 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Average Ennorian</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap">
+<style>
+/* Layout: a project page inside hemeshkanth.github.io/work. Black and white, Helvetica for reading, JetBrains Mono only for terminal details. The game is the only colour on the page. */
+:root{
+  --bg:#050505; --fg:#f2f2ee; --dim:#8a8a85; --faint:#1a1a19; --line:#3a3a37;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;
+  background-image:radial-gradient(var(--faint) 1px,transparent 1.4px);background-size:22px 22px;background-position:11px 11px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+a{color:var(--fg)}
+a:focus-visible,button:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
+.mono{font-family:var(--mono)}
+.dim{color:var(--dim)}
+
+/* terminal title bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(5,5,5,.94);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.bar .wrap{display:flex;align-items:center;gap:14px;padding-block:9px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.bar .dots{display:flex;gap:6px}
+.bar .dots i{width:8px;height:8px;border:1px solid var(--dim);transform:rotate(45deg)}
+.bar .path{flex:1;text-align:center;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar a{color:var(--dim);text-decoration:none}
+.bar a:hover{color:var(--fg)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:64px;align-items:start;padding-block:56px 72px}
+.prompt{font-family:var(--mono);font-size:13px;color:var(--dim)}
+.prompt b{color:var(--fg);font-weight:400}
+.cursor{display:inline-block;width:.55em;height:1.05em;background:var(--fg);vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+h1{font-family:var(--sans);font-weight:700;font-size:clamp(44px,6.6vw,92px);line-height:.92;letter-spacing:-.035em;margin:18px 0 22px}
+.lede{font-size:19px;line-height:1.5;max-width:31em;margin:0 0 28px;color:#d9d9d4}
+dl.meta{display:grid;grid-template-columns:max-content 1fr;gap:6px 22px;margin:0;font-family:var(--mono);font-size:13px;border-top:1px solid var(--line);padding-top:18px;max-width:34em}
+dl.meta dt{color:var(--dim)}
+dl.meta dd{margin:0}
+
+/* game */
+.game-col{display:flex;flex-direction:column;align-items:center;gap:12px;position:sticky;top:64px}
+.stage{position:relative;height:min(82vh,760px);aspect-ratio:9/16;max-width:100%;overflow:hidden;background:#2a71c9;border:1px solid var(--line);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
+.stage video.on{opacity:1}
+.stage .sp{position:absolute;pointer-events:none;z-index:3}
+.btnimg{position:absolute;border:0;padding:0;background:none;cursor:pointer;z-index:2;-webkit-tap-highlight-color:transparent;transition:opacity .35s,transform .35s}
+.btnimg img{width:100%;height:auto;display:block;pointer-events:none}
+.bob{animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7%) rotate(-2deg)}}
+.btnimg.gone{opacity:0;transform:scale(.3);pointer-events:none;animation:none}
+.murk{position:absolute;left:0;right:0;top:21.5%;bottom:6%;pointer-events:none;z-index:1;transition:opacity 2.2s ease;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 88%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 88%,transparent 100%)}
+.murk i{position:absolute;inset:0}
+.murk .m1{background:linear-gradient(180deg,#a8955a,#7a6038);mix-blend-mode:multiply;opacity:.62}
+.murk .m2{background:#6d6a55;mix-blend-mode:saturation;opacity:.45}
+.murk .m3{background:radial-gradient(60% 30% at 30% 40%,rgba(20,12,6,.35),transparent 70%),radial-gradient(50% 25% at 75% 70%,rgba(20,12,6,.3),transparent 70%);mix-blend-mode:multiply}
+.tally{position:absolute;right:4.5%;top:3%;display:flex;gap:5px;z-index:4;pointer-events:none}
+.tally i{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(0,0,0,.25);transition:background .4s}
+.tally i.on{background:#fff}
+.meter{position:absolute;left:8%;bottom:14%;width:6.5%;height:22%;border-radius:20px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 2px rgba(36,23,15,.6);overflow:hidden;z-index:4}
+.meter i{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(180deg,#3a2414,#120a05);transition:height .12s}
+.ripple{position:absolute;width:24%;aspect-ratio:1;margin:-12% 0 0 -12%;z-index:4;pointer-events:none}
+.ripple i{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.85);opacity:0;animation:ring 1.6s ease-out infinite}
+.ripple i:nth-child(2){animation-delay:.8s}
+@keyframes ring{0%{transform:scale(.35);opacity:.9}100%{transform:scale(1.15);opacity:0}}
+.popup{position:absolute;left:5%;right:5%;top:8%;z-index:5;transform-origin:62% 140%;transition:transform .5s cubic-bezier(.2,.9,.25,1.15),opacity .3s;opacity:0;transform:scale(.06) translateY(140%);pointer-events:none}
+.popup.on{opacity:1;transform:none}
+.popup img{display:block;width:100%;height:auto;max-height:44vh;object-fit:contain;background:#fff}
+.popup .cap{background:#fff;color:#111;padding:7px 10px 8px;font-family:var(--sans);font-size:clamp(11px,1.55vh,13.5px);line-height:1.35}
+.popup .cap small{display:block;font-family:var(--mono);color:#666;font-size:.8em;margin-top:2px}
+.sound{position:absolute;right:3.5%;bottom:2.2%;z-index:6;width:32px;height:32px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0}
+.sound svg{width:17px;height:17px}
+.endcard{position:absolute;inset:0;z-index:7;background:rgba(5,5,5,.9);color:var(--fg);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:10%}
+.endcard .n{font-family:var(--sans);font-weight:700;font-size:clamp(34px,6vh,54px);line-height:.95;letter-spacing:-.03em}
+.endcard p{margin:0;font-size:clamp(13px,1.9vh,16px);line-height:1.5;color:#d9d9d4}
+.endcard .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.tbtn{font-family:var(--mono);font-size:13px;background:var(--fg);color:var(--bg);border:1px solid var(--fg);padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+.tbtn.ghost{background:transparent;color:var(--fg)}
+.stage [hidden]{display:none!important}
+.under{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.02em}
+
+/* sections */
+section{padding-block:64px;border-top:1px solid var(--line)}
+.sh{display:flex;align-items:baseline;gap:16px;margin-bottom:28px}
+.sh .mono{font-size:13px;color:var(--dim)}
+h2{font-family:var(--sans);font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1;letter-spacing:-.025em;margin:0}
+.intro{max-width:38em;font-size:18px;color:#d9d9d4;margin:0 0 34px}
+.log{width:100%;border-collapse:collapse}
+.log td{padding:16px 0;border-top:1px solid var(--line);vertical-align:top}
+.log td:first-child{font-family:var(--mono);font-size:13px;color:var(--dim);width:210px;padding-right:24px;white-space:nowrap}
+.log b{display:block;font-size:22px;letter-spacing:-.01em;margin-bottom:2px}
+.log span{color:#c9c9c4}
+.news{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.news figure{margin:0;background:var(--bg);min-width:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.news img.fit{object-fit:contain;background:#fff}
+.news img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:top;filter:grayscale(1) contrast(1.05);transition:filter .3s}
+.news figure:hover img{filter:none}
+.news figcaption{padding:12px 14px 16px;font-size:15px;line-height:1.4}
+.news figcaption small{display:block;font-family:var(--mono);color:var(--dim);font-size:12px;margin-top:6px}
+.about{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:56px}
+.about p{margin:0 0 14px;font-size:17px;color:#d9d9d4}
+.src{font-family:var(--mono);font-size:12.5px;line-height:1.9}
+.src a{display:block;color:var(--dim);text-decoration:none;border-bottom:1px solid var(--faint)}
+.src a:hover{color:var(--fg)}
+.src a::before{content:"→ "}
+footer{border-top:1px solid var(--line);padding-block:22px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr;gap:28px;padding-block:28px 48px}
+  .game-col{order:-1;position:static}
+  .stage{height:min(76vh,700px)}
+  .about{grid-template-columns:1fr;gap:24px}
+  .log td:first-child{width:auto;padding-right:14px;white-space:normal}
+  .bar .hide-s{display:none}
+}
+@media (prefers-reduced-motion:reduce){.bob,.ripple i,.cursor{animation:none}.popup{transition:opacity .3s}html{scroll-behavior:auto}}
+</style>
+
+<div class="bar"><div class="wrap">
+  <a href="https://hemeshkanth.github.io/">← work</a>
+  <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span class="path">~/hemeshkanth/work/average-ennorian</span>
+  <span class="hide-s">game · 2023/26</span>
+</div></div>
+
+<main>
+<div class="wrap hero" id="play">
+  <div>
+    <div class="prompt">$ <b>open</b> average-ennorian <span class="cursor" aria-hidden="true"></span></div>
+    <h1>Average<br>Ennorian</h1>
+    <p class="lede">After Cyclone Michaung in December 2023, oil from a refinery spread through Ennore creek in Chennai. The fishers who lost their catch were paid to scoop it out, bucket by bucket. In this small game you do the same, and every bucket brings up one real news story.</p>
+    <dl class="meta">
+      <dt>type</dt><dd>playable news story</dd>
+      <dt>place</dt><dd>Ennore, Chennai</dd>
+      <dt>made</dt><dd>illustration, animation, interaction</dd>
+      <dt>by</dt><dd>Hemesh Kanth · New Media Design, NID</dd>
+      <dt>runs</dt><dd>any phone browser · no install</dd>
+    </dl>
+  </div>
+  <div class="game-col">
+    <div class="stage" id="stage">
+      <video id="vIntro" class="on" muted playsinline loop autoplay preload="auto"><source src="a/intro.webm" type="video/webm"><source src="a/intro.mp4" type="video/mp4"></video>
+      <video id="vTrans" muted playsinline preload="auto"><source src="a/trans.webm" type="video/webm"><source src="a/trans.mp4" type="video/mp4"></video>
+      <video id="vScene" muted playsinline loop preload="auto"><source src="a/scene.webm" type="video/webm"><source src="a/scene.mp4" type="video/mp4"></video>
+      <div class="murk" id="murk" style="opacity:0"><i class="m1"></i><i class="m2"></i><i class="m3"></i></div>
+      <img id="man" class="sp" alt="" hidden>
+      <button class="btnimg bob" id="bStart" aria-label="Start"><img src="a/start.png" alt=""></button>
+      <button class="btnimg bob" id="bCollect" aria-label="Collect" hidden><img src="a/collect.png" alt=""></button>
+      <div class="ripple" id="ripple" hidden><i></i><i></i></div>
+      <div class="meter" id="meter" hidden><i id="meterFill"></i></div>
+      <div class="tally" id="tally" hidden aria-label="Buckets collected"></div>
+      <div class="popup" id="popup" aria-live="polite"><img id="popImg" alt=""><div class="cap" id="popCap"></div></div>
+      <button class="sound" id="bSound" aria-label="Mute"></button>
+      <div class="endcard" id="end" hidden>
+        <div class="n">7 buckets.</div>
+        <p>In Ennore, about 100 boats of fishers scooped oil like this for days, with mugs, buckets and drums, often with bare hands.</p>
+        <p>They earned around ₹750 a day. The compensation announced was ₹6,000. A fibre boat costs about ₹4 lakh.</p>
+        <div class="row"><button class="tbtn" id="bAgain">play again</button><a class="tbtn ghost" href="#ennore">what happened</a></div>
+      </div>
+    </div>
+    <div class="under">start → collect → tap fast · sound: waves</div>
+  </div>
+</div>
+
+<section id="ennore"><div class="wrap">
+  <div class="sh"><span class="mono">/ennore</span><h2>What happened</h2></div>
+  <p class="intro">Ennore sits at the northern edge of Chennai, where the Kosasthalaiyar river meets the sea. Its fishing villages share the creek with a refinery, fertiliser plants and coal power stations.</p>
+  <table class="log"><tbody>
+    <tr><td>04 dec 2023</td><td><b>Cyclone Michaung</b><span>Floodwater at the CPCL refinery in Manali carries oil into the Buckingham Canal, then the Kosasthalaiyar river and Ennore creek.</span></td></tr>
+    <tr><td>coast guard</td><td><b>Up to 20 km² of oil</b><span>Fishing stops completely for weeks.</span></td></tr>
+    <tr><td>from 12 dec</td><td><b>About 100 boats hired to clean it</b><span>Three to four fishers in each, scooping oil into drums with mugs and buckets. Safety gear arrives late, and not for everyone.</span></td></tr>
+    <tr><td>the money</td><td><b>₹750 a day</b><span>for the cleanup. Compensation announced: ₹6,000. A fibre boat costs about ₹4 lakh.</span></td></tr>
+    <tr><td>26 dec 2023</td><td><b>Ammonia leak</b><span>Three weeks later, gas leaks from a fertiliser plant nearby and dozens of residents go to hospital.</span></td></tr>
+    <tr><td>before the spill</td><td><b>About 70% less fish</b><span>Fishers say their catch had already fallen over ten years. Studies have found mercury, lead and cadmium in creek fish.</span></td></tr>
+  </tbody></table>
+</div></section>
+
+<section id="news"><div class="wrap">
+  <div class="sh"><span class="mono">/news</span><h2>Inside the buckets</h2></div>
+  <p class="intro">Each bucket brings up one of these reports and photographs from Ennore.</p>
+  <div class="news" id="newsGrid"></div>
+</div></section>
+
+<section id="about"><div class="wrap about">
+  <div>
+    <div class="sh"><span class="mono">/about</span><h2>About</h2></div>
+    <p>Average Ennorian is drawn and animated by Hemesh Kanth. It started as a projection piece and is now a game that runs in any phone browser.</p>
+    <p>The idea comes from Carlo Zanni's <i>Average Shoveler</i> (2004), where you shovel snow on a New York street while the day's news falls around you. Here the snow is oil, and the news is about that oil.</p>
+    <p>Because it needs nothing to install, a newspaper could print a QR code beside a story and let readers play it.</p>
+  </div>
+  <div class="src">
+    <div class="dim" style="margin-bottom:8px">sources</div>
+    <a href="https://www.thenewsminute.com/tamil-nadu/ennore-spill-fishers-who-lost-livelihood-now-remove-oil-using-mugs-and-drums" target="_blank" rel="noopener">The News Minute · mugs and drums</a>
+    <a href="https://www.dtnext.in/amp/story/news/tamilnadu/desperate-fishermen-exposed-to-clean-crude-oil-from-river-for-rs-750day-754192" target="_blank" rel="noopener">DT Next · ₹750 a day</a>
+    <a href="https://www.thenewsminute.com/tamil-nadu/ennore-tragedy-thermal-power-plants-have-destroyed-chennais-fishing-communities-53123" target="_blank" rel="noopener">The News Minute · power plants and fishers</a>
+    <a href="https://thesouthfirst.com/tamilnadu/ennore-ammonia-gas-leak-52-people-hospitalised/" target="_blank" rel="noopener">The South First · ammonia leak</a>
+    <a href="https://artbase.rhizome.org/wiki/Q3152" target="_blank" rel="noopener">Rhizome · Average Shoveler, Carlo Zanni</a>
+  </div>
+</div></section>
+</main>
+<footer><div class="wrap">© Hemesh Kanth · news images belong to their publishers, shown for reporting and education</div></footer>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const NEWS=[
+ {img:'a/news/n1.jpg',cap:'Study finds mercury, lead in fish from Ennore creek',src:'The Times of India'},
+ {img:'a/news/n2.jpg',cap:'Dead fish in oil on the Ennore shore',src:'News photograph, Dec 2023'},
+ {img:'a/news/n3.jpg',cap:'Oil coats the mangroves of Ennore creek',src:'The Times of India'},
+ {img:'a/news/n4.jpg',cap:'Oil trapped in Ennore creek area, no egress: Coast Guard',src:'The Federal'},
+ {img:'a/news/n5.jpg',cap:'A fisher clears oil by hand at the creek',src:'Deccan Herald'},
+ {img:'a/news/n6.jpg',cap:'Tamil Nadu announces Rs 8 crore relief package for Ennore creek',src:'India Today'},
+ {img:'a/news/n7.jpg',cap:"Ammonia gas leak in Chennai's Ennore, several hospitalised",src:'Hindustan Times',fit:1}
+];
+$('newsGrid').innerHTML=NEWS.map(n=>`<figure><img src="${n.img}" alt="" loading="lazy"${n.fit?' class="fit"':''}><figcaption>${n.cap}<small>${n.src}</small></figcaption></figure>`).join('');
+$('tally').innerHTML='<i></i>'.repeat(7);
+
+const ICON_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const ICON_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M3 3l18 18"/></svg>';
+
+/* positions are in the video's own 720×1280 pixel space */
+const BTN={start:[208.7,618.3,290.7,113],collect:[548,948,140,140]};
+const SP={"145":[354,646,274,590],"146":[319,677,304,557],"147":[332,702,302,534],"150":[291,762,345,469],"151":[294,759,342,472],"152":[287,753,362,489],"158":[308,672,329,563],"159":[324,660,313,575],"162":[234,657,326,568],"163":[253,651,297,574],"164":[236,669,274,554],"165":[247,669,258,556],"166":[242,665,259,561],"167":[244,663,257,561],"168":[220,661,284,561],"169":[188,659,313,565],"170":[179,656,324,568],"171":[178,657,320,567],"172":[185,683,281,539],"173":[182,681,276,536]};
+const WALK=[164,165,166,167,168,169,170,171,172,173];
+const DOWN=[145,146,147,150], SCOOP=[150,151,152], RISE=[158,159,162,163];
+const RISE_DX={162:78,163:76};
+const WDX={164:0,165:17,166:18,167:26,168:8,169:-18,170:-21,171:-16,172:-3,173:0};
+const imgs={};Object.keys(SP).forEach(k=>{const i=new Image();i.src=`a/m/${k}.webp`;imgs[k]=i});
+NEWS.forEach(n=>{const i=new Image();i.src=n.img});
+const pct=(v,t)=>(v/t*100)+'%';
+function place(el,[x,y,w,h]){el.style.left=pct(x,720);el.style.top=pct(y,1280);el.style.width=pct(w,720);if(h!=null)el.style.height=pct(h,1280)}
+place($('bStart'),BTN.start);place($('bCollect'),BTN.collect);
+const rp=$('ripple');rp.style.left=pct(330,720);rp.style.top=pct(1150,1280);
+const man=$('man');
+function pose(k,dx=0){const [x,y,w,h]=SP[k];man.src=imgs[k].src;place(man,[x+dx,y,w,h]);man.hidden=false}
+function walkPose(k,cx,footY){const [x,y,w,h]=SP[k];place(man,[cx-137+WDX[k],footY-h,w,h]);man.src=imgs[k].src;man.hidden=false}
+
+const vI=$('vIntro'),vT=$('vTrans'),vS=$('vScene');
+let state='intro',round=0,fill=0,anim=null;
+function playFrames(seq,fps,onFrame,done){
+  let i=0,last=0;cancelAnimationFrame(anim);
+  const step=ts=>{if(!last)last=ts;if(ts-last>=1000/fps){last=ts;if(i>=seq.length){done&&done();return}onFrame(seq[i],i);i++}anim=requestAnimationFrame(step)};
+  anim=requestAnimationFrame(step);
+}
+function walk(fromCx,toCx,footY,dur,done){
+  const t0=performance.now();let f=0,lastF=0;cancelAnimationFrame(anim);
+  const step=ts=>{const k=Math.min(1,(ts-t0)/dur);if(ts-lastF>125){f=(f+1)%WALK.length;lastF=ts}
+    walkPose(WALK[f],fromCx+(toCx-fromCx)*k,footY);if(k<1)anim=requestAnimationFrame(step);else done&&done()};
+  anim=requestAnimationFrame(step);
+}
+
+/* sound: waves and birds */
+let AC=null,master=null,soundOn=true;
+function setIcon(){$('bSound').innerHTML=soundOn?ICON_ON:ICON_OFF;$('bSound').setAttribute('aria-label',soundOn?'Mute':'Unmute')}
+setIcon();
+function audio(){
+  if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  master=AC.createGain();master.gain.value=soundOn?.8:0;master.connect(AC.destination);
+  const len=AC.sampleRate*4,buf=AC.createBuffer(1,len,AC.sampleRate),d=buf.getChannelData(0);let l=0;
+  for(let i=0;i<len;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.2}AC._n=buf;
+  const s=AC.createBufferSource();s.buffer=buf;s.loop=true;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=600;const g=AC.createGain();g.gain.value=.35;
+  s.connect(lp);lp.connect(g);g.connect(master);s.start();
+  const o=AC.createOscillator(),og=AC.createGain();o.frequency.value=.12;og.gain.value=.25;o.connect(og);og.connect(g.gain);o.start();
+  (function birds(){if(!AC)return;const t0=AC.currentTime,n=2+Math.floor(Math.random()*4);
+    for(let i=0;i<n;i++){const os=AC.createOscillator(),gg=AC.createGain(),st=t0+i*.12,f=2600+Math.random()*1000;os.frequency.setValueAtTime(f,st);os.frequency.exponentialRampToValueAtTime(f*1.3,st+.06);gg.gain.setValueAtTime(0,st);gg.gain.linearRampToValueAtTime(.05,st+.01);gg.gain.exponentialRampToValueAtTime(.0001,st+.1);os.connect(gg);gg.connect(master);os.start(st);os.stop(st+.14)}
+    setTimeout(birds,3000+Math.random()*6000)})();
+}
+function splash(){if(!AC)return;const t=AC.currentTime,s=AC.createBufferSource();s.buffer=AC._n;const bp=AC.createBiquadFilter();bp.type='bandpass';bp.frequency.value=600+Math.random()*400;const g=AC.createGain();g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);s.connect(bp);bp.connect(g);g.connect(master);s.start(t,Math.random()*3);s.stop(t+.25)}
+$('bSound').onclick=e=>{e.stopPropagation();soundOn=!soundOn;audio();if(master)master.gain.value=soundOn?.8:0;setIcon()};
+
+/* flow */
+function show(v){[vI,vT,vS].forEach(x=>x.classList.toggle('on',x===v))}
+function tally(){[...$('tally').children].forEach((d,i)=>d.classList.toggle('on',i<round))}
+function idle(on){const b=$('bCollect');b.hidden=false;b.classList.toggle('gone',on);b.classList.toggle('bob',!on)}
+function dirt(){const v=Math.max(0,1-(round+(state==='scoop'?fill*.9:0))/7);$('murk').style.opacity=v}
+$('bStart').onclick=()=>{
+  if(state!=='intro')return;audio();state='trans';$('bStart').classList.add('gone');
+  vT.currentTime=0;show(vT);vT.play().catch(()=>{});
+  vS.currentTime=0;vS.play().catch(()=>{});
+  vT.onended=ready;setTimeout(()=>{if(state==='trans')ready()},5600);
+};
+function ready(){
+  if(state!=='trans'&&state!=='again')return;state='ready';show(vS);vI.pause();
+  $('tally').hidden=false;tally();dirt();idle(false);
+}
+$('bCollect').onclick=()=>{
+  audio();
+  if(state!=='ready')return;
+  if(round>=7){finish();return}
+  $('popup').classList.remove('on');state='walkin';idle(true);
+  walk(830,491,1236,2100,()=>playFrames(DOWN,7,k=>pose(k),startScoop));
+};
+$('stage').addEventListener('pointerdown',e=>{if(state==='scoop'&&!e.target.closest('#bSound'))scoopTap()});
+let drain=null,cur=0;
+function scoopTap(){
+  fill=Math.min(1,fill+.11);splash();
+  cur=(cur+1)%3;pose(SCOOP[cur]);
+  $('meterFill').style.height=(fill*100)+'%';dirt();
+  if(fill>.2)rp.hidden=true;
+  if(fill>=1)doneScoop();
+}
+function startScoop(){
+  state='scoop';fill=0;cur=0;$('meter').hidden=false;$('meterFill').style.height='0%';rp.hidden=false;
+  clearInterval(drain);drain=setInterval(()=>{if(state!=='scoop')return;fill=Math.max(0,fill-.035);$('meterFill').style.height=(fill*100)+'%';if(fill<.05)rp.hidden=false},120);
+}
+function doneScoop(){
+  state='rise';clearInterval(drain);rp.hidden=true;$('meterFill').style.height='100%';
+  round++;tally();dirt();
+  setTimeout(()=>$('meter').hidden=true,400);
+  playFrames(RISE,7,k=>pose(k,RISE_DX[k]||0),()=>{
+    const n=NEWS[round-1];$('popImg').src=n.img;$('popCap').innerHTML=`${n.cap}<small>${n.src}</small>`;$('popup').classList.add('on');
+    walk(477,-240,1230,4200,()=>{man.hidden=true;state='ready';idle(false)});
+  });
+}
+function finish(){state='end';$('popup').classList.remove('on');idle(true);$('tally').hidden=true;$('end').hidden=false}
+$('bAgain').onclick=()=>{$('end').hidden=true;round=0;state='again';ready()};
+vI.play().catch(()=>{});
+})();
+</script>
+
+</body></html>

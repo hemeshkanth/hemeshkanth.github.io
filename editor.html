@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Site editor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Editor for the goldfish site. Everything you change here is written to content.js (+ images in assets/ and media/). */
+:root {
+  --paper: #f6f3ec; --paper2: #ece7dc; --white: #fffdf8; --ink: #2b3240; --mute: rgba(43,50,64,.6); --line: rgba(43,50,64,.16);
+  --navy: #2f4a6e; --teal: #4f8a8b; --mango: #f7c443; --red: #c4493b; --ok: #4f7a5c;
+  --pixel: "Silkscreen", "Courier New", monospace; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font: 13px/1.55 var(--mono); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--navy); }
+.app { display: grid; grid-template-columns: 220px minmax(0, 1fr) var(--pw, 46vw); grid-template-rows: 54px minmax(0, 1fr); height: 100vh; }
+.app.nopreview { --pw: 0px; }
+.app.nopreview .preview { display: none; }
+
+/* top bar */
+.top { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--ink); background: var(--white); }
+.top .brand { font-family: var(--pixel); font-size: 15px; display: flex; gap: 8px; align-items: center; }
+.top .brand svg { width: 28px; height: 18px; }
+.top .status { color: var(--mute); font-size: 12px; margin-left: 6px; }
+.top .status.dirty { color: var(--navy); }
+.top .sp { flex: 1; }
+.btn { font-family: var(--pixel); font-size: 11.5px; border: 1px solid var(--ink); background: var(--white); padding: 7px 12px 8px; display: inline-flex; gap: 6px; align-items: center; text-decoration: none; color: var(--ink); white-space: nowrap; }
+.btn:hover { background: var(--ink); color: var(--white); }
+.btn:active { transform: translate(1px, 1px); }
+.btn.primary { background: var(--mango); }
+.btn.primary:hover { background: var(--ink); color: var(--mango); }
+.btn.small { padding: 4px 8px 5px; font-size: 10.5px; }
+.btn.ghost { border-color: var(--line); }
+.btn.danger:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+
+/* side nav */
+.side { border-right: 1px solid var(--line); overflow-y: auto; padding: 12px 0 40px; background: var(--paper2); }
+.side h4 { font-family: var(--pixel); font-weight: 400; font-size: 10px; color: var(--mute); margin: 16px 16px 6px; }
+.side button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 7px 16px; font-size: 12.5px; }
+.side button:hover { background: rgba(255,255,255,.6); }
+.side button.on { background: var(--ink); color: var(--white); }
+.side button .n { font-family: var(--pixel); font-size: 10px; opacity: .55; margin-right: 6px; }
+.side .road { font-size: 10px; color: var(--teal); margin-left: 4px; }
+
+/* main form */
+.main { overflow-y: auto; padding: 22px 30px 120px; }
+.main h2 { font-family: var(--pixel); font-weight: 400; font-size: 24px; margin: 0 0 4px; }
+.main .help { color: var(--mute); margin: 0 0 18px; max-width: 60em; }
+.main h3 { font-family: var(--pixel); font-weight: 400; font-size: 13px; color: var(--navy); margin: 28px 0 10px; display: flex; align-items: center; gap: 10px; }
+.main h3::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.field { margin: 0 0 14px; }
+.field > label { display: block; font-size: 11px; color: var(--mute); margin-bottom: 4px; }
+.field > label b { color: var(--ink); font-weight: 500; }
+input[type=text], input[type=url], input[type=email], input[type=password], textarea, select { width: 100%; border: 1px solid var(--line); background: var(--white); padding: 8px 10px; border-radius: 0; outline: none; }
+input:focus, textarea:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 2px rgba(47,74,110,.15); }
+textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
+.row { display: grid; grid-template-columns: repeat(var(--c, 2), minmax(0, 1fr)); gap: 12px; }
+.counter { float: right; font-size: 10px; color: var(--mute); }
+
+/* cards for repeated things */
+.item { border: 1px solid var(--line); background: var(--white); margin: 0 0 10px; }
+.item > .bar { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 12px; border-bottom: 1px solid var(--line); background: rgba(236,231,220,.5); }
+.item > .bar .t { font-family: var(--pixel); font-size: 10.5px; color: var(--navy); flex: 1; }
+.item > .body { padding: 12px; }
+.item.drag { opacity: .4; }
+.item.over { outline: 2px dashed var(--teal); }
+.handle { cursor: grab; color: var(--mute); padding: 0 4px; user-select: none; }
+.pairs .pair { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.6fr) auto; gap: 6px; margin-bottom: 6px; }
+.adders { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+
+/* images */
+.img { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 12px; align-items: start; }
+.thumb { width: 132px; aspect-ratio: 4 / 3; border: 1px solid var(--line); background: repeating-linear-gradient(-45deg, transparent 0 8px, var(--line) 8px 9px), var(--white); display: grid; place-items: center; overflow: hidden; font-family: var(--pixel); font-size: 9.5px; color: var(--mute); position: relative; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.thumb.drop { outline: 2px dashed var(--teal); }
+.img .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.pend { display: inline-block; font-family: var(--pixel); font-size: 9px; background: var(--mango); padding: 1px 5px; margin-left: 6px; }
+
+/* preview */
+.preview { border-left: 1px solid var(--ink); display: grid; grid-template-rows: auto minmax(0, 1fr); background: #dde3ea; }
+.preview .pbar { display: flex; gap: 6px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line); background: var(--white); flex-wrap: wrap; }
+.preview .pbar .lbl { font-family: var(--pixel); font-size: 10px; color: var(--mute); margin-right: auto; }
+.preview iframe { width: 100%; height: 100%; border: 0; background: var(--paper); }
+
+/* misc */
+.note { border-left: 3px solid var(--teal); background: var(--white); padding: 10px 12px; margin: 0 0 16px; max-width: 64em; }
+.note.warn { border-color: var(--mango); }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); background: var(--ink); color: var(--white); padding: 9px 14px; font-size: 12px; opacity: 0; transition: .3s; pointer-events: none; z-index: 50; max-width: 80vw; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.toast.bad { background: var(--red); }
+.progress { height: 6px; background: var(--line); margin: 8px 0; }
+.progress i { display: block; height: 100%; width: 0; background: var(--teal); transition: width .2s; }
+.log { font-size: 11.5px; background: var(--white); border: 1px solid var(--line); padding: 8px 10px; max-height: 220px; overflow: auto; white-space: pre-wrap; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.sw { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--white); padding: 6px 8px; }
+.sw input[type=color] { width: 34px; height: 26px; border: 1px solid var(--line); padding: 0; background: none; }
+.sky { height: 46px; border: 1px solid var(--line); margin: 6px 0 10px; }
+.pages { display: flex; gap: 6px; overflow-x: auto; padding: 6px 0; }
+.pages img { height: 60px; border: 1px solid var(--line); }
+kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); padding: 0 4px; background: var(--white); }
+@media (max-width: 1100px) { .app { grid-template-columns: 180px minmax(0, 1fr); } .preview { display: none; } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="top">
+    <div class="brand"><svg viewBox="0 0 34 22" aria-hidden="true"><path d="M10 11 L1 3 Q4 11 1 19 Z" fill="#F7C443" stroke="#2b3240" stroke-width="1.4"/><path d="M9 11 C12 2, 27 1, 33 10 C27 20, 12 20, 9 11 Z" fill="#F7C443" stroke="#2b3240" stroke-width="1.4"/><circle cx="25" cy="9" r="3.2" fill="#fff" stroke="#2b3240" stroke-width="1.3"/><circle cx="25.6" cy="9" r="1.3" fill="#2b3240"/></svg> site editor</div>
+    <span class="status" id="status">loading…</span>
+    <span class="sp"></span>
+    <button class="btn ghost" id="bPrev" type="button" title="Show or hide the live preview">preview ◧</button>
+    <button class="btn ghost" id="bUndo" type="button" title="Undo (Ctrl/Cmd+Z)">↶ undo</button>
+    <button class="btn" id="bZip" type="button">export zip ⬇</button>
+    <button class="btn primary" id="bPush" type="button">publish to GitHub ↑</button>
+  </div>
+  <nav class="side" id="side"></nav>
+  <main class="main" id="main"></main>
+  <section class="preview" id="preview">
+    <div class="pbar"><span class="lbl">live preview</span><label style="font-size:11px"><input type="checkbox" id="live" checked> auto</label><button class="btn small" id="bRefresh" type="button">↻ refresh</button><a class="btn small ghost" href="index.html" target="_blank" rel="noopener">open site ↗</a></div>
+    <iframe id="frame" title="Preview of the site"></iframe>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="filePick" hidden>
+
+<script src="content.js"></script>
+<script>
+(() => {
+  /* ===================================================================
+     STATE
+     C        the content being edited (same shape as content.js)
+     files    pending uploads not yet published: path → { blob, url }
+     =================================================================== */
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const PUBLISHED = clone(window.CONTENT || {});
+  let C = clone(PUBLISHED);
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('fish-editor-content') || 'null'); } catch (e) { }
+  if (saved && saved.__base === JSON.stringify(PUBLISHED).length) C = saved.content;   // resume a draft made against this version
+  C.site = C.site || {}; C.home = C.home || {}; C.projects = C.projects || []; C.captions = C.captions || []; C.themes = C.themes || {};
+  const files = new Map();
+  let dirty = !!(saved && saved.__base === JSON.stringify(PUBLISHED).length && JSON.stringify(saved.content) !== JSON.stringify(PUBLISHED));
+  const history = []; let lastSnap = JSON.stringify(C);
+
+  // where each part of the story sits in the film (for the preview to jump to)
+  const ROAD = [.15, .21, .33, .39, .45];
+  const CAP_P = [.02, .06, .12, .17, .23, .27, .31, .35, .41, .47, .515, .55, .6, .63, .73, .78, .815, .87, .95];
+  const CAP_LABEL = ['in the bowl', 'the jump', 'landing on the bike', 'riding (after project 1)', 'riding (after project 1, second line)', 'the car arrives', 'driving', 'driving (after project 3)', 'driving (second line)', 'reaching the sea', 'walking the jetty', 'sailing', 'leaving the boat', 'into the ocean (before exploration)', 'diving deeper', 'looking up', 'rising', 'the world from above', 'last line before contact'];
+  const THEME_DEFAULTS = {
+    day: { top: '#7fb0dc', mid: '#eef0ea', bot: '#e6e1d4', sea: '#6f9cc9' },
+    sunset: { top: '#2f3f7a', mid: '#f0cf7c', bot: '#e7d6a6', sea: '#4f6f9e' },
+    night: { top: '#0b1428', mid: '#1f3357', bot: '#2a3d62', sea: '#22385f' },
+    sunrise: { top: '#8db7dc', mid: '#f5e6bd', bot: '#eeeee0', sea: '#7fa6cf' }
+  };
+
+  /* ---------------- pending files survive a reload (IndexedDB) ---------------- */
+  const idb = (() => { let dbp = null; const open = () => dbp || (dbp = new Promise((res, rej) => { const r = indexedDB.open('fish-editor', 1); r.onupgradeneeded = () => r.result.createObjectStore('files'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+    const tx = async (mode, fn) => { const db = await open(); return new Promise((res, rej) => { const t = db.transaction('files', mode); const st = t.objectStore('files'); const out = fn(st); t.oncomplete = () => res(out && out.result); t.onerror = () => rej(t.error); }); };
+    return { put: (k, v) => tx('readwrite', s => s.put(v, k)).catch(() => { }), del: k => tx('readwrite', s => s.delete(k)).catch(() => { }), clear: () => tx('readwrite', s => s.clear()).catch(() => { }), all: async () => { try { const db = await open(); return await new Promise((res) => { const out = []; const t = db.transaction('files'); const c = t.objectStore('files').openCursor(); c.onsuccess = () => { const cur = c.result; if (cur) { out.push([cur.key, cur.value]); cur.continue(); } else res(out); }; c.onerror = () => res(out); }); } catch (e) { return []; } } }; })();
+  function addFile(path, blob) { const old = files.get(path); if (old) URL.revokeObjectURL(old.url); files.set(path, { blob, url: URL.createObjectURL(blob) }); idb.put(path, blob); }
+  const fileURL = p => (files.get(p) || {}).url || p;
+
+  /* ---------------- save / undo / status ---------------- */
+  const statusEl = $('#status');
+  let saveT = null, prevT = null;
+  function changed(opts = {}) {
+    dirty = true; setStatus();
+    clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem('fish-editor-content', JSON.stringify({ __base: JSON.stringify(PUBLISHED).length, content: C })); } catch (e) { } }, 400);
+    const snap = JSON.stringify(C); if (snap !== lastSnap) { history.push(lastSnap); if (history.length > 80) history.shift(); lastSnap = snap; }
+    if (opts.preview !== false && $('#live').checked) { clearTimeout(prevT); prevT = setTimeout(refreshPreview, opts.soon ? 200 : 1400); }
+  }
+  function setStatus(msg) { statusEl.textContent = msg || (dirty ? `unpublished changes${files.size ? ` · ${files.size} new file${files.size > 1 ? 's' : ''}` : ''} · draft saved on this computer` : 'everything published'); statusEl.classList.toggle('dirty', dirty); }
+  function undo() { if (!history.length) return toast('nothing to undo'); C = JSON.parse(history.pop()); lastSnap = JSON.stringify(C); render(); changed({ soon: true }); }
+  $('#bUndo').onclick = undo;
+  addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.shiftKey && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); undo(); } });
+  addEventListener('beforeunload', e => { if (files.size) { e.preventDefault(); e.returnValue = ''; } });
+  let toastT; function toast(msg, bad) { const t = $('#toast'); t.textContent = msg; t.classList.toggle('bad', !!bad); t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), bad ? 6000 : 2600); }
+
+  /* ---------------- preview ---------------- */
+  const frame = $('#frame'); let jumpP = 0, frameReady = false;
+  function previewContent() { const c = clone(C); c.__files = {}; files.forEach((v, k) => c.__files[k] = v.url); return c; }
+  function refreshPreview() { if ($('#app').classList.contains('nopreview')) return; frameReady = false; frame.src = 'index.html?draft=' + Date.now(); }
+  addEventListener('message', e => { if (e.source === frame.contentWindow && e.data && e.data.type === 'fish-ready') { frame.contentWindow.postMessage({ type: 'fish-draft', content: previewContent(), jump: jumpP }, '*'); frameReady = true; } });
+  $('#bRefresh').onclick = refreshPreview;
+  $('#bPrev').onclick = () => { $('#app').classList.toggle('nopreview'); if (!$('#app').classList.contains('nopreview')) refreshPreview(); };
+  function jumpTo(p) { jumpP = p; try { if (frame.contentWindow.FILM) frame.contentWindow.FILM.jump(p); } catch (e) { } }
+
+  /* ===================================================================
+     SMALL BUILDING BLOCKS FOR THE FORMS
+     every input is bound to a path in C, e.g. ['projects', 2, 'title']
+     =================================================================== */
+  const getP = (path) => path.reduce((o, k) => (o == null ? undefined : o[k]), C);
+  const setP = (path, v) => { let o = C; for (let i = 0; i < path.length - 1; i++) { if (o[path[i]] == null) o[path[i]] = typeof path[i + 1] === 'number' ? [] : {}; o = o[path[i]]; } o[path[path.length - 1]] = v; };
+  let BID = 0; const binds = {};
+  function input(label, path, o = {}) {
+    const id = 'f' + (BID++); binds[id] = { path, o };
+    const v = getP(path) ?? '';
+    const ctl = o.area ? `<textarea id="${id}" rows="${o.rows || 3}" placeholder="${esc(o.ph || '')}">${esc(v)}</textarea>` : `<input id="${id}" type="${o.type || 'text'}" value="${esc(v)}" placeholder="${esc(o.ph || '')}">`;
+    return `<div class="field">${label ? `<label for="${id}">${label}${o.max ? `<span class="counter" data-for="${id}">${String(v).length}/${o.max}</span>` : ''}</label>` : ''}${ctl}${o.help ? `<div class="help" style="margin:4px 0 0;font-size:11px">${o.help}</div>` : ''}</div>`;
+  }
+  function wireInputs(root) {
+    $$('input[id^=f], textarea[id^=f], select[id^=f]', root).forEach(el => {
+      const b = binds[el.id]; if (!b) return;
+      el.addEventListener('input', () => { setP(b.path, el.value); const c = $(`.counter[data-for="${el.id}"]`); if (c) c.textContent = el.value.length + '/' + b.o.max; if (b.o.onInput) b.o.onInput(el.value); changed({ preview: false }); });
+      el.addEventListener('change', () => changed());
+      el.addEventListener('focus', () => { if (b.o.jump != null) jumpTo(b.o.jump); });
+      if (el.tagName === 'TEXTAREA') { const fit = () => { el.style.height = 'auto'; el.style.height = Math.min(480, el.scrollHeight + 2) + 'px'; }; el.addEventListener('input', fit); requestAnimationFrame(fit); }
+    });
+  }
+  // a list editor: items in an array, each with a small header (move, duplicate, remove)
+  function list(path, renderItem, o = {}) {
+    const arr = getP(path) || []; setP(path, arr);
+    const key = path.join('.');
+    return `<div class="list" data-list="${key}">${arr.map((it, i) => `<div class="item" draggable="false" data-i="${i}"><div class="bar"><span class="handle" title="drag to reorder">⠿</span><span class="t">${esc(o.title ? o.title(it, i) : '#' + (i + 1))}</span>
+      <button class="btn small ghost" data-act="up" type="button" title="move up">↑</button><button class="btn small ghost" data-act="down" type="button" title="move down">↓</button>${o.noDup ? '' : '<button class="btn small ghost" data-act="dup" type="button" title="duplicate">⧉</button>'}<button class="btn small ghost danger" data-act="del" type="button" title="remove">✕</button></div>
+      <div class="body">${renderItem(it, i, [...path, i])}</div></div>`).join('')}</div>`;
+  }
+  function wireLists(root) {
+    $$('.list', root).forEach(L => {
+      const path = L.dataset.list.split('.').map(k => /^\d+$/.test(k) ? +k : k);
+      const arr = () => getP(path);
+      $$(':scope > .item', L).forEach(item => {
+        const i = +item.dataset.i;
+        $$(':scope > .bar [data-act]', item).forEach(b => b.onclick = () => {
+          const a = arr(), act = b.dataset.act;
+          if (act === 'up' && i > 0) [a[i - 1], a[i]] = [a[i], a[i - 1]];
+          else if (act === 'down' && i < a.length - 1) [a[i + 1], a[i]] = [a[i], a[i + 1]];
+          else if (act === 'dup') a.splice(i + 1, 0, clone(a[i]));
+          else if (act === 'del') { if (!confirm('Remove this?')) return; a.splice(i, 1); }
+          else return;
+          changed(); render();
+        });
+        const h = $(':scope > .bar .handle', item);
+        h.onmousedown = () => item.draggable = true; item.ondragend = () => { item.draggable = false; item.classList.remove('drag'); };
+        item.ondragstart = e => { e.dataTransfer.setData('text/fish', L.dataset.list + '|' + i); item.classList.add('drag'); };
+        item.ondragover = e => { if (e.dataTransfer.types.includes('text/fish')) { e.preventDefault(); item.classList.add('over'); } };
+        item.ondragleave = () => item.classList.remove('over');
+        item.ondrop = e => { e.preventDefault(); item.classList.remove('over'); const [k, from] = e.dataTransfer.getData('text/fish').split('|'); if (k !== L.dataset.list) return; const a = arr(); const [m] = a.splice(+from, 1); a.splice(i, 0, m); changed(); render(); };
+      });
+    });
+  }
+  // label / value rows (facts, list items)
+  function pairs(path, la = 'label', lb = 'value') {
+    const arr = getP(path) || []; setP(path, arr);
+    return `<div class="pairs" data-pairs="${path.join('.')}">${arr.map((r, i) => `<div class="pair">${input('', [...path, i, 0], { ph: la })}${input('', [...path, i, 1], { ph: lb })}<button class="btn small ghost danger" data-del="${i}" type="button" title="remove row">✕</button></div>`).join('')}<button class="btn small" data-add type="button">+ row</button></div>`;
+  }
+  function wirePairs(root) { $$('.pairs', root).forEach(P => { const path = P.dataset.pairs.split('.').map(k => /^\d+$/.test(k) ? +k : k); $$(':scope > .pair > [data-del]', P).forEach(b => b.onclick = () => { getP(path).splice(+b.dataset.del, 1); changed(); render(); }); $(':scope > [data-add]', P).onclick = () => { getP(path).push(['', '']); changed({ preview: false }); render(); }; }); }
+
+  /* ---------------- images: pick or drop, resize, store as a pending file ---------------- */
+  const slug = s => String(s || 'img').toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'img';
+  const rid = () => Math.random().toString(36).slice(2, 6);
+  function imageField(path, o = {}) {
+    const obj = getP(path) || {}; setP(path, obj);
+    const src = obj.src || '';
+    return `<div class="img" data-img="${path.join('.')}" data-prefix="${esc(o.prefix || 'site')}"><div class="thumb" title="drop an image here">${src ? `<img src="${esc(fileURL(src))}" alt="">` : 'no image<br>drop one here'}</div>
+      <div>${o.noCap ? '' : input('caption', [...path, 'cap'], { ph: 'what is in the picture' })}
+      <div class="field"><label>file ${files.has(src) ? '<span class="pend">not published yet</span>' : ''}</label><input type="text" value="${esc(src)}" data-srcin placeholder="assets/photo.jpg or https://…"></div>
+      <div class="acts"><button class="btn small" data-pick type="button">upload image…</button>${src ? '<button class="btn small ghost danger" data-clear type="button">remove image</button>' : ''}</div></div></div>`;
+  }
+  function wireImages(root) {
+    $$('.img[data-img]', root).forEach(box => {
+      const path = box.dataset.img.split('.').map(k => /^\d+$/.test(k) ? +k : k), prefix = box.dataset.prefix;
+      const take = async (file) => { if (!file || !/^image\//.test(file.type)) return toast('That is not an image', true); toast('preparing image…'); const { blob, ext } = await shrinkImage(file); const p = `assets/${slug(prefix)}-${slug(file.name)}-${rid()}.${ext}`; addFile(p, blob); getP(path).src = p; changed({ soon: true }); render(); toast('image added. It goes online when you publish.'); };
+      $('[data-pick]', box).onclick = () => pickFile('image/*', take);
+      const clr = $('[data-clear]', box); if (clr) clr.onclick = () => { getP(path).src = ''; changed(); render(); };
+      const si = $('[data-srcin]', box); si.onchange = () => { getP(path).src = si.value.trim(); changed(); render(); };
+      const th = $('.thumb', box); th.ondragover = e => { e.preventDefault(); th.classList.add('drop'); }; th.ondragleave = () => th.classList.remove('drop'); th.ondrop = e => { e.preventDefault(); th.classList.remove('drop'); take(e.dataTransfer.files[0]); };
+    });
+  }
+  function pickFile(accept, cb) { const f = $('#filePick'); f.value = ''; f.accept = accept; f.onchange = () => cb(f.files[0]); f.click(); }
+  function shrinkImage(file, max = 2000) {
+    return new Promise((res) => {
+      if (/svg|gif/.test(file.type) || (file.type === 'image/png' && file.size < 1.2e6)) return res({ blob: file, ext: file.type.split('/')[1].replace('svg+xml', 'svg').replace('jpeg', 'jpg') });
+      const img = new Image(); img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); c.toBlob(b => res({ blob: b, ext: 'jpg' }), 'image/jpeg', .86); URL.revokeObjectURL(img.src); };
+      img.onerror = () => res({ blob: file, ext: (file.name.split('.').pop() || 'jpg').toLowerCase() }); img.src = URL.createObjectURL(file);
+    });
+  }
+  // a PDF becomes one image per page (pdf.js, loaded only when needed)
+  let pdfjs = null;
+  async function loadPdfJs() { if (pdfjs) return pdfjs; await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the PDF reader. Check the internet connection.')); document.head.appendChild(s); }); pdfjs = window.pdfjsLib; pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; return pdfjs; }
+  async function pdfToPages(file, folder, onStep) {
+    const lib = await loadPdfJs(); const doc = await lib.getDocument({ data: await file.arrayBuffer() }).promise; const n = doc.numPages;
+    for (let i = 1; i <= n; i++) {
+      const page = await doc.getPage(i); const v0 = page.getViewport({ scale: 1 }); const vp = page.getViewport({ scale: 1600 / Math.max(v0.width, v0.height) * (v0.width > v0.height ? 1 : .9) });
+      const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height); const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+      await page.render({ canvasContext: g, viewport: vp }).promise;
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .82)); addFile(`${folder}/p-${String(i).padStart(2, '0')}.jpg`, blob); onStep(i, n);
+    }
+    return { pages: n, ratio: '' };
+  }
+
+  /* ===================================================================
+     PAGES OF THE EDITOR
+     =================================================================== */
+  let view = { k: 'opening' };
+  const NAV = () => [
+    ['the site', [['opening', 'Opening screen'], ['captions', 'Story captions']]],
+    ['work (on the road)', [...C.projects.map((p, i) => [`p${i}`, p.title || '(untitled)', i]), ['addProject', '+ add a project']]],
+    ['the rest', [['exploration', 'Exploration (sea)'], ['about', 'About'], ['contact', 'Contact'], ['colours', 'Colours']]],
+    ['publish', [['publish', 'Publish & export']]]
+  ];
+  function renderSide() {
+    $('#side').innerHTML = NAV().map(([h, items]) => `<h4>${h}</h4>` + items.map(([k, label, i]) => `<button type="button" data-k="${k}" class="${view.k === k ? 'on' : ''}">${i != null ? `<span class="n">${String(i + 1).padStart(2, '0')}</span>` : ''}${esc(label)}${i != null && i < 5 ? '<span class="road">· road</span>' : i != null ? '<span class="road" style="color:var(--mute)">· panel only</span>' : ''}</button>`).join('')).join('');
+    $$('#side button').forEach(b => b.onclick = () => { if (b.dataset.k === 'addProject') { addProject(); return; } view = { k: b.dataset.k }; render(); $('#main').scrollTop = 0; });
+  }
+  function addProject() {
+    const n = C.projects.length + 1; C.projects.push({ id: 'project-' + n + '-' + rid(), title: 'New project', kind: '', year: String(new Date().getFullYear()), status: '', line: '', cover: { src: '', cap: '' }, facts: [['Role', ''], ['Team', ''], ['Tools', '']], blocks: [{ t: 'text', h: 'The idea', p: '' }] });
+    view = { k: 'p' + (C.projects.length - 1) }; changed(); render();
+  }
+
+  const PAGES = {
+    opening() {
+      jumpTo(0);
+      return `<h2>Opening screen</h2><p class="help">The first thing people see, over the goldfish bowl. Keep it short.</p>
+      ${input('Your name (big)', ['site', 'name'], { jump: 0 })}
+      ${input('One line about you', ['site', 'tagline'], { jump: 0, max: 70, ph: 'Exploring the human side of AI and emotions.' })}
+      ${input('Small line under it (optional)', ['site', 'subline'], { jump: 0, max: 90 })}
+      <h3>also used elsewhere</h3>
+      <div class="row">${input('Role', ['site', 'role'])}${input('Where you are', ['site', 'place'])}</div>`;
+    },
+    captions() {
+      return `<h2>Story captions</h2><p class="help">The lines typed at the bottom of the screen as the story plays. Each one belongs to a moment in the film. Click a line and the preview jumps there. Leave one empty to keep the default.</p>
+      ${CAP_LABEL.map((l, i) => input(`<b>${String(i + 1).padStart(2, '0')}</b> · ${l}`, ['captions', i], { jump: CAP_P[i], max: 90 })).join('')}`;
+    },
+    project(i) {
+      const pr = C.projects[i]; if (!pr) return '<p>Project not found.</p>';
+      if (i < 5) jumpTo(ROAD[i]);
+      pr.facts = pr.facts || []; pr.blocks = pr.blocks || []; pr.cover = pr.cover || { src: '', cap: '' };
+      const P = ['projects', i];
+      return `<h2>${esc(pr.title || 'Project')}</h2><p class="help">${i < 5 ? `Bubble ${i + 1} of 5 on the road (${i < 2 ? 'by bike' : 'by car'}).` : 'Only the first five projects get a bubble on the road. This one appears in the case-study panel through “next case”.'} Order the projects with ↑ ↓ at the bottom of this page.</p>
+      <h3>card</h3>
+      ${input('Title', [...P, 'title'], { onInput: v => { const b = $(`#side button[data-k="p${i}"]`); if (b) b.lastChild.textContent = v; } })}
+      <div class="row" style="--c:3">${input('Kind of work', [...P, 'kind'], { ph: 'Installation · social robotics' })}${input('Year', [...P, 'year'])}${input('Status', [...P, 'status'], { ph: 'ongoing / playable / …' })}</div>
+      ${input('One line (shown on the card)', [...P, 'line'], { area: 1, rows: 2, max: 200 })}
+      <h3>quick facts</h3>${pairs([...P, 'facts'], 'Role', 'what you did')}
+      <h3>cover image</h3><p class="help">Shown at the top of the case study (when there is no deck, report or game).</p>${imageField([...P, 'cover'], { prefix: pr.id })}
+      <h3>deck, report or game</h3>${mediaEditor(i)}
+      <h3>case study, block by block</h3>
+      <p class="help">The case study is a column of blocks. Drag ⠿ or use ↑ ↓ to reorder.</p>
+      ${list([...P, 'blocks'], (b, j, bp) => blockEditor(b, bp, pr), { title: b => ({ text: 'text', quote: 'quote', list: 'list', image: 'image', gallery: 'gallery', demo: 'note' }[b.t] || b.t) + (b.h ? ' · ' + b.h : b.q ? ' · ' + b.q.slice(0, 40) : '') })}
+      <div class="adders">${[['text', '+ text'], ['image', '+ image'], ['gallery', '+ gallery'], ['quote', '+ quote'], ['list', '+ list'], ['demo', '+ note']].map(([t, l]) => `<button class="btn small" type="button" data-addblock="${t}">${l}</button>`).join('')}</div>
+      <h3>the project itself</h3>
+      <div class="row">${input('Link label (optional)', [...P, 'link', 'label'], { ph: 'open the prototype' })}${input('Link URL', [...P, 'link', 'url'], { type: 'url', ph: 'https://…' })}</div>
+      ${input('Short id (used for the bubble icon and file names)', [...P, 'id'], { help: 'flock, ruhi, ennore, kottakkal and museum have their own 3D icons; any other id gets a generic one.' })}
+      <div class="adders" style="margin-top:20px"><button class="btn" data-pmove="-1" type="button">↑ move project up</button><button class="btn" data-pmove="1" type="button">↓ move project down</button><button class="btn danger" data-pdel type="button">delete project</button></div>`;
+    },
+    exploration() {
+      jumpTo(.68); C.home.reef = C.home.reef || [];
+      return `<h2>Exploration</h2><p class="help">Shown in the sea, after the jump from the boat. Small experiments, one line each.</p>
+      ${input('Heading', ['home', 'reefTitle'], { jump: .68 })}
+      ${list(['home', 'reef'], (r, j, p) => `<div class="row" style="--c:2">${input('Title', [...p, 't'])}${input('Tag (tools, tech)', [...p, 'k'])}</div>${input('One line', [...p, 'p'], { area: 1, rows: 2 })}`, { title: r => r.t || 'experiment' })}
+      <div class="adders"><button class="btn small" type="button" id="addReef">+ add an experiment</button></div>`;
+    },
+    about() {
+      jumpTo(.92); C.home.keen = C.home.keen || [];
+      return `<h2>About</h2><p class="help">The card over the Earth.</p>
+      ${input('Intro', ['home', 'intro'], { area: 1, rows: 4, jump: .92 })}
+      ${input('A second, quieter paragraph', ['home', 'bowl'], { area: 1, rows: 4, jump: .92 })}
+      ${input('Education line', ['site', 'education'], { ph: 'M.Des New Media Design, National Institute of Design, Gandhinagar' })}
+      <h3>what you believe (short lines)</h3>
+      ${list(['home', 'keen'], (k, j, p) => `${input('Line', [...p, 'h'])}${input('More (optional, for later use)', [...p, 'p'], { area: 1, rows: 2 })}`, { title: k => k.h || 'line' })}
+      <div class="adders"><button class="btn small" type="button" id="addKeen">+ add a line</button></div>`;
+    },
+    contact() {
+      jumpTo(1);
+      return `<h2>Contact</h2><p class="help">The last card, as the fish flies toward you.</p>
+      ${input('A line before the email', ['home', 'return'], { area: 1, rows: 2, jump: 1 })}
+      ${input('Email', ['site', 'email'], { type: 'email', jump: 1 })}
+      <div class="row">${input('LinkedIn URL', ['site', 'linkedin'], { type: 'url' })}${input('GitHub URL', ['site', 'github'], { type: 'url' })}</div>`;
+    },
+    colours() {
+      return `<h2>Colours</h2><p class="help">The sky and sea for each time of day. Visitors switch time of day with the sun/moon button; the first visit follows their clock. The goldfish always stays mango.</p>
+      ${Object.keys(THEME_DEFAULTS).map(th => { const cur = Object.assign({}, THEME_DEFAULTS[th], C.themes[th] || {});
+        return `<h3>${th}</h3><div class="sky" style="background:linear-gradient(${cur.top}, ${cur.mid} 62%, ${cur.bot} 74%, ${cur.sea} 76%)"></div><div class="swatches">${[['top', 'sky, top'], ['mid', 'horizon'], ['bot', 'below horizon'], ['sea', 'sea']].map(([k, l]) => `<label class="sw"><input type="color" value="${cur[k]}" data-th="${th}" data-key="${k}">${l}</label>`).join('')}</div>
+        <div class="adders"><button class="btn small ghost" type="button" data-threset="${th}">reset ${th}</button><button class="btn small ghost" type="button" data-thview="${th}">see it in the preview</button></div>`; }).join('')}`;
+    },
+    publish() {
+      const gh = ghCfg();
+      return `<h2>Publish</h2>
+      <div class="note">Two ways to put your changes online. <b>Publish to GitHub</b> writes content.js and your new images straight into the repository; GitHub Pages updates the site in a minute or two. <b>Export zip</b> gives you the same files to copy into the repo folder yourself.</div>
+      <h3>GitHub</h3>
+      <div class="row" style="--c:3">${ghInput('Owner', 'owner', gh.owner)}${ghInput('Repository', 'repo', gh.repo)}${ghInput('Branch', 'branch', gh.branch)}</div>
+      <div class="row">${ghInput('Folder in the repo (empty = root)', 'folder', gh.folder)}${ghInput('Commit message', 'msg', gh.msg)}</div>
+      <div class="field"><label>Access token</label><input type="password" data-gh="token" value="${esc(gh.token)}" placeholder="github_pat_…" autocomplete="off"><div class="help" style="margin:4px 0 0;font-size:11px">Make one at GitHub → Settings → Developer settings → Fine-grained tokens. Give it access to <b>only this repository</b> with <b>Contents: Read and write</b>. It is used only from this page to talk to GitHub.</div></div>
+      <label style="display:flex;gap:8px;align-items:center;margin:-4px 0 16px"><input type="checkbox" data-gh="remember" ${gh.remember ? 'checked' : ''}> remember the token on this computer</label>
+      <div class="adders"><button class="btn" type="button" id="ghTest">test connection</button><button class="btn primary" type="button" id="ghPush">publish to GitHub ↑</button></div>
+      <div class="progress" id="ghProg" hidden><i></i></div><div class="log" id="ghLog" hidden></div>
+      <h3>by hand</h3>
+      <div class="adders"><button class="btn" type="button" id="zip2">export zip ⬇ (content.js + new files)</button><button class="btn ghost" type="button" id="dlContent">download content.js only</button></div>
+      <h3>new files waiting (${files.size})</h3>
+      ${files.size ? `<div class="log">${[...files.keys()].map(esc).join('\n')}</div><div class="adders"><button class="btn small ghost danger" id="dropFiles" type="button">forget these files</button></div>` : '<p class="help">None. Images you upload appear here until they are published.</p>'}
+      <h3>start over</h3><div class="adders"><button class="btn ghost danger" type="button" id="revert">throw away my changes (go back to the published site)</button></div>`;
+    }
+  };
+
+  function mediaEditor(i) {
+    const pr = C.projects[i], m = pr.media || null, P = ['projects', i, 'media'];
+    const kind = m ? m.type : 'none';
+    let inner = '';
+    if (m && (m.type === 'pdf' || m.type === 'deck')) {
+      const pad = n => String(n).padStart(m.pad || 2, '0');
+      inner = `${input('Label', [...P, 'label'], { ph: m.type === 'deck' ? 'the project deck' : 'the full report (PDF)' })}
+        <div class="field"><label>${m.pages || 0} pages ${m.src && files.has(m.src.replace('{n}', pad(1))) ? '<span class="pend">not published yet</span>' : ''}</label><div class="pages">${Array.from({ length: Math.min(m.pages || 0, 40) }, (_, k) => `<img loading="lazy" src="${esc(fileURL(m.src.replace('{n}', pad(k + 1))))}" alt="">`).join('')}</div></div>
+        <div class="adders"><button class="btn small" type="button" data-pdf>${m.pages ? 'replace with another PDF…' : 'upload a PDF…'}</button></div><div class="progress" id="pdfProg" hidden><i></i></div>`;
+    } else if (m && m.type === 'game') {
+      inner = `${input('Label', [...P, 'label'], { ph: 'play it here' })}${input('Address of the game page', [...P, 'src'], { ph: 'ennore/index.html or https://…', help: 'A page in this repo (like ennore/index.html) or any web address that allows embedding.' })}`;
+    }
+    return `<div class="field"><label>Show inside the case study</label><select data-mtype>${[['none', 'nothing extra'], ['pdf', 'a report (PDF, page by page)'], ['deck', 'a slide deck (PDF, slide by slide)'], ['game', 'a game or web page (embedded)']].map(([v, l]) => `<option value="${v}" ${kind === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>${inner}`;
+  }
+  function blockEditor(b, p, pr) {
+    if (b.t === 'text') return `${input('Heading', [...p, 'h'])}${input('Text', [...p, 'p'], { area: 1, rows: 4 })}${input('A deeper note (optional, shown smaller)', [...p, 'd'], { area: 1, rows: 2 })}`;
+    if (b.t === 'quote') return input('Quote', [...p, 'q'], { area: 1, rows: 2 });
+    if (b.t === 'demo') return `${input('Heading', [...p, 'h'])}${input('Text', [...p, 'p'], { area: 1, rows: 3 })}`;
+    if (b.t === 'list') { b.items = b.items || []; return `${input('Heading', [...p, 'h'])}${pairs([...p, 'items'], 'item', 'description')}`; }
+    if (b.t === 'image') return imageField(p, { prefix: pr.id });
+    if (b.t === 'gallery') { b.items = b.items || []; return `${list([...p, 'items'], (it, k, ip) => imageField(ip, { prefix: pr.id }), { title: (it, k) => 'picture ' + (k + 1) })}<div class="adders"><button class="btn small" type="button" data-addpic="${p.join('.')}">+ picture</button><button class="btn small ghost" type="button" data-multipic="${p.join('.')}">+ several pictures at once…</button></div>`; }
+    return `<p class="help">Unknown block type “${esc(b.t)}”.</p>`;
+  }
+  const ghCfg = () => { let s = {}; try { s = JSON.parse(localStorage.getItem('fish-editor-gh') || '{}'); } catch (e) { } const t = sessionStorage.getItem('fish-gh-token') || ''; return Object.assign({ owner: 'hemeshkanth', repo: 'hemeshkanth.github.io', branch: 'main', folder: '', msg: 'Update site content', token: t, remember: false }, s, s.token ? {} : { token: t }); };
+  const ghInput = (l, k, v) => `<div class="field"><label>${l}</label><input type="text" data-gh="${k}" value="${esc(v)}"></div>`;
+  function saveGh() { const g = {}; $$('[data-gh]').forEach(el => g[el.dataset.gh] = el.type === 'checkbox' ? el.checked : el.value.trim()); try { sessionStorage.setItem('fish-gh-token', g.token); const keep = Object.assign({}, g); if (!g.remember) delete keep.token; localStorage.setItem('fish-editor-gh', JSON.stringify(keep)); } catch (e) { } return g; }
+
+  /* ---------------- render ---------------- */
+  function render() {
+    BID = 0; for (const k in binds) delete binds[k];
+    renderSide();
+    const k = view.k, m = $('#main');
+    m.innerHTML = /^p\d+$/.test(k) ? PAGES.project(+k.slice(1)) : (PAGES[k] || PAGES.opening)();
+    wireInputs(m); wireLists(m); wirePairs(m); wireImages(m); wireExtras(m); setStatus();
+  }
+  function wireExtras(m) {
+    const k = view.k;
+    if (/^p\d+$/.test(k)) {
+      const i = +k.slice(1), pr = C.projects[i];
+      $$('[data-addblock]', m).forEach(b => b.onclick = () => { const t = b.dataset.addblock; pr.blocks.push(t === 'gallery' ? { t, items: [{ src: '', cap: '' }] } : t === 'list' ? { t, h: '', items: [['', '']] } : t === 'image' ? { t, src: '', cap: '' } : t === 'quote' ? { t, q: '' } : { t, h: '', p: '' }); changed(); render(); setTimeout(() => m.scrollTo({ top: m.scrollHeight, behavior: 'smooth' }), 50); });
+      $$('[data-addpic]', m).forEach(b => b.onclick = () => { getP(b.dataset.addpic.split('.').map(x => /^\d+$/.test(x) ? +x : x)).items.push({ src: '', cap: '' }); changed(); render(); });
+      $$('[data-multipic]', m).forEach(b => b.onclick = () => { const f = $('#filePick'); f.value = ''; f.accept = 'image/*'; f.multiple = true; f.onchange = async () => { const g = getP(b.dataset.multipic.split('.').map(x => /^\d+$/.test(x) ? +x : x)); toast('preparing ' + f.files.length + ' images…'); for (const file of f.files) { const { blob, ext } = await shrinkImage(file); const pth = `assets/${slug(pr.id)}-${slug(file.name)}-${rid()}.${ext}`; addFile(pth, blob); g.items.push({ src: pth, cap: '' }); } f.multiple = false; g.items = g.items.filter(it => it.src || it.cap); changed({ soon: true }); render(); }; f.click(); });
+      const mt = $('[data-mtype]', m); if (mt) mt.onchange = () => { const v = mt.value; if (v === 'none') delete pr.media; else if (v === 'game') pr.media = { type: 'game', label: 'play it here', src: (pr.media && pr.media.type === 'game' && pr.media.src) || '' }; else pr.media = Object.assign({ pages: 0, src: `media/${slug(pr.id)}/p-{n}.jpg`, pad: 2, label: v === 'deck' ? 'the project deck' : 'the full report (PDF)' }, pr.media && pr.media.type !== 'game' ? pr.media : {}, { type: v }); changed(); render(); };
+      const pdfB = $('[data-pdf]', m); if (pdfB) pdfB.onclick = () => pickFile('application/pdf', async (file) => {
+        if (!file) return; const prog = $('#pdfProg'); prog.hidden = false; const folder = `media/${slug(pr.id)}-${rid()}`;
+        try { const r = await pdfToPages(file, folder, (a, n) => { prog.firstChild.style.width = (a / n * 100) + '%'; }); pr.media.pages = r.pages; pr.media.src = folder + '/p-{n}.jpg'; pr.media.pad = 2; changed({ soon: true }); render(); toast(r.pages + ' pages ready. They go online when you publish.'); }
+        catch (e) { toast(e.message || 'Could not read that PDF', true); prog.hidden = true; }
+      });
+      $$('[data-pmove]', m).forEach(b => b.onclick = () => { const d = +b.dataset.pmove, j = i + d; if (j < 0 || j >= C.projects.length) return; [C.projects[i], C.projects[j]] = [C.projects[j], C.projects[i]]; view = { k: 'p' + j }; changed(); render(); });
+      const del = $('[data-pdel]', m); if (del) del.onclick = () => { if (!confirm(`Delete “${pr.title}”? (You can undo.)`)) return; C.projects.splice(i, 1); view = { k: C.projects.length ? 'p' + Math.max(0, i - 1) : 'opening' }; changed(); render(); };
+    }
+    if (k === 'exploration') $('#addReef').onclick = () => { C.home.reef.push({ t: '', k: '', p: '' }); changed(); render(); };
+    if (k === 'about') $('#addKeen').onclick = () => { C.home.keen.push({ h: '', p: '' }); changed(); render(); };
+    if (k === 'colours') {
+      $$('input[type=color]', m).forEach(el => el.oninput = () => { const th = el.dataset.th; C.themes[th] = C.themes[th] || {}; C.themes[th][el.dataset.key] = el.value; const cur = Object.assign({}, THEME_DEFAULTS[th], C.themes[th]); el.closest('.swatches').previousElementSibling.style.background = `linear-gradient(${cur.top}, ${cur.mid} 62%, ${cur.bot} 74%, ${cur.sea} 76%)`; changed({ preview: false }); });
+      $$('input[type=color]', m).forEach(el => el.onchange = () => { try { localStorage.setItem('fish-time', el.dataset.th); } catch (e) { } changed(); });
+      $$('[data-threset]', m).forEach(b => b.onclick = () => { delete C.themes[b.dataset.threset]; changed(); render(); });
+      $$('[data-thview]', m).forEach(b => b.onclick = () => { try { localStorage.setItem('fish-time', b.dataset.thview); } catch (e) { } jumpP = .2; refreshPreview(); });
+    }
+    if (k === 'publish') {
+      $$('[data-gh]', m).forEach(el => el.onchange = saveGh);
+      $('#ghTest').onclick = async () => { const g = saveGh(); try { const r = await ghApi(g, ''); toast(`connected to ${r.full_name} ✓ (${r.permissions && r.permissions.push ? 'can publish' : 'read only: the token cannot write'})`, !(r.permissions && r.permissions.push)); } catch (e) { toast(e.message, true); } };
+      $('#ghPush').onclick = () => publish();
+      $('#zip2').onclick = exportZip; $('#dlContent').onclick = () => download(new Blob([contentJS()], { type: 'text/javascript' }), 'content.js');
+      const df = $('#dropFiles'); if (df) df.onclick = () => { if (!confirm('Forget the files that are not published yet?')) return; files.forEach(v => URL.revokeObjectURL(v.url)); files.clear(); idb.clear(); render(); };
+      $('#revert').onclick = () => { if (!confirm('Throw away all unpublished changes?')) return; C = clone(PUBLISHED); files.clear(); idb.clear(); localStorage.removeItem('fish-editor-content'); dirty = false; render(); refreshPreview(); };
+    }
+  }
+
+  /* ===================================================================
+     OUTPUT: content.js, zip, GitHub
+     =================================================================== */
+  function contentJS() { const c = clone(C); delete c.__files; return '/* All the words, images and colours of the site. Edit with editor.html, or by hand. */\nwindow.CONTENT = ' + JSON.stringify(c, null, 2) + ';\n'; }
+  function usedFiles() { const s = JSON.stringify(C); return [...files.keys()].filter(p => s.includes(p) || [...s.matchAll(/"src":\s*"([^"]*\{n\}[^"]*)"/g)].some(m => p.startsWith(m[1].split('{n}')[0]))); }
+  function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+  async function exportZip() {
+    toast('making the zip…');
+    try {
+      if (!window.JSZip) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; s.onload = res; s.onerror = () => rej(new Error('Could not load the zip tool. Use “download content.js only”.')); document.head.appendChild(s); });
+      const z = new JSZip(); z.file('content.js', contentJS()); for (const p of usedFiles()) z.file(p, files.get(p).blob);
+      z.file('HOW-TO-USE.txt', 'Copy everything in this zip into your site folder (the one with index.html), replacing content.js. Then commit and push.\n');
+      download(await z.generateAsync({ type: 'blob' }), 'site-update.zip'); toast('zip downloaded');
+    } catch (e) { toast(e.message, true); }
+  }
+  async function ghApi(g, path, opts = {}) {
+    if (!g.token) throw new Error('Add an access token first.');
+    const r = await fetch(`https://api.github.com/repos/${encodeURIComponent(g.owner)}/${encodeURIComponent(g.repo)}${path}`, Object.assign({ headers: { Authorization: 'Bearer ' + g.token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }, opts));
+    if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch (e) { } throw new Error(r.status === 401 ? 'GitHub did not accept the token.' : r.status === 404 ? 'Repository or branch not found (or the token cannot see it).' : r.status === 403 ? 'The token is not allowed to do this. It needs Contents: Read and write.' : `GitHub said: ${m || r.status}`); }
+    return r.json();
+  }
+  const b64 = blob => new Promise(res => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.readAsDataURL(blob); });
+  async function publish() {
+    if ($('#ghPush') && view.k !== 'publish') { view = { k: 'publish' }; render(); }
+    const g = saveGh(); if (!g.token) { view = { k: 'publish' }; render(); return toast('Add your GitHub access token, then publish.', true); }
+    const log = $('#ghLog'), prog = $('#ghProg'); log.hidden = prog.hidden = false; log.textContent = ''; const say = s => { log.textContent += s + '\n'; log.scrollTop = 1e9; };
+    const pre = g.folder ? g.folder.replace(/^\/|\/$/g, '') + '/' : '';
+    $('#ghPush').disabled = $('#bPush').disabled = true;
+    try {
+      say('reading the repository…');
+      const ref = await ghApi(g, `/git/ref/heads/${encodeURIComponent(g.branch)}`); const base = ref.object.sha;
+      const baseCommit = await ghApi(g, `/git/commits/${base}`);
+      const up = [['content.js', new Blob([contentJS()], { type: 'text/javascript' })], ...usedFiles().map(p => [p, files.get(p).blob])];
+      const tree = [];
+      for (let k = 0; k < up.length; k++) { const [p, blob] = up[k]; say(`uploading ${p}`); const r = await ghApi(g, '/git/blobs', { method: 'POST', body: JSON.stringify({ content: await b64(blob), encoding: 'base64' }) }); tree.push({ path: pre + p, mode: '100644', type: 'blob', sha: r.sha }); prog.firstChild.style.width = ((k + 1) / (up.length + 2) * 100) + '%'; }
+      say('writing the commit…');
+      const t = await ghApi(g, '/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: baseCommit.tree.sha, tree }) });
+      const c = await ghApi(g, '/git/commits', { method: 'POST', body: JSON.stringify({ message: g.msg || 'Update site content', tree: t.sha, parents: [base] }) });
+      await ghApi(g, `/git/refs/heads/${encodeURIComponent(g.branch)}`, { method: 'PATCH', body: JSON.stringify({ sha: c.sha }) });
+      prog.firstChild.style.width = '100%';
+      say(`done ✓  commit ${c.sha.slice(0, 7)}. The site updates in a minute or two.`);
+      files.forEach(v => URL.revokeObjectURL(v.url)); files.clear(); idb.clear();
+      Object.keys(PUBLISHED).forEach(k => delete PUBLISHED[k]); Object.assign(PUBLISHED, clone(C));
+      localStorage.removeItem('fish-editor-content'); dirty = false; setStatus(); toast('published ✓');
+    } catch (e) { say('✕ ' + e.message); toast(e.message, true); }
+    finally { $('#ghPush').disabled = $('#bPush').disabled = false; }
+  }
+  $('#bZip').onclick = exportZip;
+  $('#bPush').onclick = () => { view = { k: 'publish' }; render(); };
+
+  /* ---------------- start ---------------- */
+  (async () => {
+    for (const [k, blob] of await idb.all()) files.set(k, { blob, url: URL.createObjectURL(blob) });
+    if (!window.CONTENT) { $('#main').innerHTML = '<div class="note warn">Could not load content.js. Keep editor.html in the same folder as index.html and content.js.</div>'; return; }
+    render(); refreshPreview();
+    if (location.protocol === 'file:') $('#main').insertAdjacentHTML('afterbegin', '<div class="note warn">You opened the editor as a file. Editing and exporting work, but the live preview is more reliable from a local server or from your published site (yoursite/editor.html).</div>');
+  })();
+})();
+</script>
+</body>
+</html>
