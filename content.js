@@ -15,7 +15,11 @@ window.CONTENT = {
     "github": "https://github.com/hemeshkanth",
     "font": "archivo",
     "tagline": "Exploring the human side of AI and emotions.",
-    "subline": "affective computing · creative technology · new media design, NID"
+    "subline": "affective computing · creative technology · new media design, NID",
+    "readFont": "IBM Plex Mono",
+    "imgFilter": "film",
+    "musicDefault": "on",
+    "defaultTime": "auto"
   },
   "home": {
     "myth": "They say a goldfish forgets everything in three seconds.",
@@ -100,7 +104,31 @@ window.CONTENT = {
         "k": "Aluminium · fabrication",
         "p": "Cheap, light and many. My first time working with aluminium."
       }
-    ]
+    ],
+    "about": {
+      "lead": "I am a creative technologist and designer. I build robots, interactive objects and stories about how people and machines learn to live together.",
+      "sections": [
+        {
+          "h": "What I do",
+          "p": "I design the relationship between people and the non-human things around them: robots that react, AI agents that talk back, objects that remember. My work sits between affective computing, interaction design and making things by hand."
+        },
+        {
+          "h": "How I work",
+          "p": "I am comfortable with ambiguity. I start from a question, not a tool, and the tools follow what the project needs. I sketch, build rough prototypes, wire the electronics, write the code and put it in front of people early."
+        },
+        {
+          "h": "What I care about",
+          "p": "Affective empathy: how people come to feel something for a machine, and what designers owe them when they do. I want technology to feel warm, honest and rooted in the place it lives, especially in Indian homes and streets."
+        },
+        {
+          "h": "Making",
+          "p": "Fabrication is part of how I think: laser cutting, 3D printing, CNC, metal and wood, casting. Electronics with ESP32 and Arduino, motors, sensors and lots of LEDs."
+        }
+      ],
+      "keenTitle": "What I believe",
+      "tools": "Figma · Blender · Unity · TouchDesigner · p5.js · Processing · Python · PyTorch · OpenCV · JavaScript · ESP32 / Arduino",
+      "languages": "English · Tamil · Hindi · some Malayalam and Telugu"
+    }
   },
   "projects": [
     {
@@ -621,7 +649,7 @@ window.CONTENT = {
     "what happens when people feel something for a machine?",
     "The road ran into the sea.",
     "So I walked.",
-    "Then sailed.",
+    "Then I caught a wave.",
     "And jumped again.",
     "In the ocean, I play. Small experiments, watched closely.",
     "Deeper.",
@@ -630,5 +658,23 @@ window.CONTENT = {
     "The ocean was never the edge. It was the world.",
     "Every interface is a bowl, and someone lives inside it."
   ],
-  "themes": {}
+  "themes": {},
+  "ui": {
+    "nav": {
+      "work": "work",
+      "exploration": "exploration",
+      "about": "about",
+      "contact": "contact"
+    },
+    "hint": "scroll ↓",
+    "openCase": "open case study",
+    "game": "play the game",
+    "deck": "view the deck",
+    "report": "read the report",
+    "email": "copy email",
+    "copied": "copied ✓",
+    "aboutTitle": "about",
+    "contactTitle": "Send a signal",
+    "exploreTitle": "exploration"
+  }
 };
